@@ -12,6 +12,13 @@ class TechniciansInfo:
             technician['_id'] = str(technician['_id'])
         return technicians
     
+    def get_all_technicians_skills(self, skill_set):
+        query = {"skill_set": skill_set}
+        technicians = list(technicians_info.find(query))
+        for technician in technicians:
+            technician['_id'] = str(technician['_id'])
+        return technicians
+    
     def calculate_distance(self, lat1, lon1, lat2, lon2):
         """
         Calculate the distance between two points on the Earth's surface
@@ -39,7 +46,7 @@ class TechniciansInfo:
 
         return distance
     
-    def find_nearest_persons(self, latitude, longitude, skill_set, technicians_list, num_persons=5):
+    def find_nearest_persons(self, latitude, longitude, technicians_list, num_persons=5):
         """
         Find the top 'num_persons' nearest persons with the required skill_set,
         based on the given latitude and longitude.
@@ -47,10 +54,9 @@ class TechniciansInfo:
         # Calculate distances to all technicians with the required skill_set
         distances = []
         for technician in technicians_list:
-            if technician['skill_set'] == skill_set:
-                tech_lat, tech_lon = technician['current_location']
-                distance = self.calculate_distance(latitude, longitude, tech_lat, tech_lon)
-                distances.append((technician, distance))
+            tech_lat, tech_lon = technician['current_location']
+            distance = self.calculate_distance(latitude, longitude, tech_lat, tech_lon)
+            distances.append((technician, distance))
 
         # Sort the list of distances by distance
         sorted_distances = sorted(distances, key=lambda x: x[1])
@@ -59,18 +65,14 @@ class TechniciansInfo:
         top_persons = []
         for i in range(min(num_persons, len(sorted_distances))):
             person, distance = sorted_distances[i]
-            top_persons.append(person)
-
-        for person in top_persons:
             lat, long = person["current_location"]
-            location_details = get_address(latitude=lat, longitude=long)
-            person["location_details"] = location_details
-
+            person["location_details"] = get_address(latitude=lat, longitude=long)
+            top_persons.append(person)
 
         return top_persons
     
     def get_nearest_technician_skillset(self, user_lat, user_lon, skill_set):
-        technicians_list = self.get_all_technicians()
-        nearest_persons = self.find_nearest_persons(latitude=user_lat, longitude=user_lon, skill_set=skill_set, technicians_list=technicians_list, num_persons=5)
+        technicians_list = self.get_all_technicians_skills(skill_set=skill_set)
+        nearest_persons = self.find_nearest_persons(latitude=user_lat, longitude=user_lon, technicians_list=technicians_list, num_persons=5)
         return nearest_persons
 
