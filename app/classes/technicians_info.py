@@ -1,4 +1,5 @@
 from app.classes.dbconfig import technicians_info
+from utils.map_utils import get_address
 from math import radians, sin, cos, sqrt, atan2
 
 class TechniciansInfo:
@@ -59,6 +60,12 @@ class TechniciansInfo:
         for i in range(min(num_persons, len(sorted_distances))):
             person, distance = sorted_distances[i]
             top_persons.append(person)
+
+        for person in top_persons:
+            lat, long = person["current_location"]
+            location_details = get_address(latitude=lat, longitude=long)
+            person["location_details"] = location_details.address
+
 
         return top_persons
     
