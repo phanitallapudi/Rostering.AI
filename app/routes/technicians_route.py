@@ -19,7 +19,7 @@ async def get_nearest_technician(lat: float = Query(..., title="latitude", descr
         response = {"message" : "skill set not found"}
         return JSONResponse(content=response, status_code=404)
 
-    response = technicianinfoObj.get_nearest_technician_skillset(user_lat=lat, user_lon=long, skill_set=skill_set)
+    response = technicianinfoObj.get_nearest_technician(user_lat=lat, user_lon=long, skill_set=skill_set)
     return JSONResponse(content=response, status_code=200)
 
 @router.get("/update_cluster_id_technician")

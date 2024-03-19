@@ -19,6 +19,13 @@ class TechniciansInfo:
             technician['_id'] = str(technician['_id'])
         return technicians
     
+    def get_all_technicians_skills_clusterid(self, skill_set, cluster_id):
+        query = {"skill_set": skill_set, "cluster_id": cluster_id}
+        technicians = list(technicians_info.find(query))
+        for technician in technicians:
+            technician['_id'] = str(technician['_id'])
+        return technicians
+    
     def calculate_distance(self, lat1, lon1, lat2, lon2):
         """
         Calculate the distance between two points on the Earth's surface
@@ -94,8 +101,11 @@ class TechniciansInfo:
 
         return top_persons
     
-    def get_nearest_technician_skillset(self, user_lat, user_lon, skill_set):
-        technicians_list = self.get_all_technicians_skills(skill_set=skill_set)
+    def get_nearest_technician(self, user_lat, user_lon, skill_set):
+        user_location = (user_lat, user_lon)
+        cluster_id = int(get_cluster_id(user_location))
+        print(cluster_id)
+        technicians_list = self.get_all_technicians_skills_clusterid(skill_set=skill_set, cluster_id=cluster_id)
         nearest_persons = self.find_nearest_persons(latitude=user_lat, longitude=user_lon, technicians_list=technicians_list, num_persons=5)
         return nearest_persons
 
