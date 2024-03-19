@@ -2,3 +2,5 @@ fastapi
 pymongo
 geopy
 python-dotenv
+langchain
+langchain_openai
