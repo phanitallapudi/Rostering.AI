@@ -21,3 +21,8 @@ async def get_nearest_technician(lat: float = Query(..., title="latitude", descr
 
     response = technicianinfoObj.get_nearest_technician_skillset(user_lat=lat, user_lon=long, skill_set=skill_set)
     return JSONResponse(content=response, status_code=200)
+
+@router.get("/update_cluster_id_technician")
+async def updates_the_cluster_id_of_technician():
+    response = technicianinfoObj.update_cluster_id_technician()
+    return JSONResponse(content=response, status_code=200)

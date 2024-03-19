@@ -18,3 +18,4 @@ client = MongoClient(mongodb_uri, port)
 db = client["techniciansdata"]
 
 technicians_info = db["technician_info"]
+location_data = db["Location_data"]

@@ -1,5 +1,5 @@
 from app.classes.dbconfig import technicians_info
-from utils.map_utils import get_address
+from utils.map_utils import get_address, get_cluster_id
 from math import radians, sin, cos, sqrt, atan2
 
 class TechniciansInfo:
@@ -99,3 +99,13 @@ class TechniciansInfo:
         nearest_persons = self.find_nearest_persons(latitude=user_lat, longitude=user_lon, technicians_list=technicians_list, num_persons=5)
         return nearest_persons
 
+    def update_cluster_id_technician(self):
+        cluster_column = "cluster_id"
+        updated_count = 0
+        for entry in technicians_info.find():
+            location = entry["current_location"]
+            retrieved_cluster_id = get_cluster_id(location)
+            response = technicians_info.update_one({"_id": entry["_id"]}, {"$set": {cluster_column: int(retrieved_cluster_id)}})
+            if response.modified_count > 0:
+                updated_count += 1
+        return {"response" : f"{updated_count} documents updated."}
