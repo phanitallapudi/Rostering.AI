@@ -23,7 +23,7 @@ class LLMAssistance(BaseLLMRequirements, TechniciansInfo):
         llm_response = llm_chain({"services": technicial_skill_set,"query": question})
         retrived_technicial_skillset = llm_response["text"]
 
-        technicians_list = self.get_nearest_technician_skillset(skill_set=retrived_technicial_skillset, user_lat=user_lat, user_lon=user_lon)
+        technicians_list = self.get_nearest_technician(skill_set=retrived_technicial_skillset, user_lat=user_lat, user_lon=user_lon)
         nearest_persons = self.find_nearest_persons(latitude=user_lat, longitude=user_lon, technicians_list=technicians_list, num_persons=5)
 
         return nearest_persons
