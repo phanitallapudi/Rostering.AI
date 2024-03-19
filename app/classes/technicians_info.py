@@ -56,18 +56,41 @@ class TechniciansInfo:
         for technician in technicians_list:
             tech_lat, tech_lon = technician['current_location']
             distance = self.calculate_distance(latitude, longitude, tech_lat, tech_lon)
-            distances.append((technician, distance))
+            
+            if technician['feedback_sentiment'] == "positive":
+                experience_weight = 1
+                
+            elif technician['feedback_sentiment'] == "neutral":
+                experience_weight = 0
+                
+            else:
+                experience_weight = -1
+                
+            if technician["day_schedule"] == "free":
+                schedule = 1
+            else:
+                schedule = 0
+                
+            rating_weight = technician['rating'] * (100 / 3)
+            feedback_weight = technician['experience_years'] * (100 / 3)
+            experience_weight = experience_weight * (100 / 3)
+            weightage_score = rating_weight + feedback_weight + experience_weight
+            
+            distances.append((technician, distance, weightage_score, schedule))
 
         # Sort the list of distances by distance
-        sorted_distances = sorted(distances, key=lambda x: x[1])
+        sorted_distances = sorted(distances, key=lambda x: (-x[3], x[1], -x[2]))
 
         # Extract top 'num_persons' nearest persons
         top_persons = []
         for i in range(min(num_persons, len(sorted_distances))):
-            person, distance = sorted_distances[i]
-            lat, long = person["current_location"]
-            person["location_details"] = get_address(latitude=lat, longitude=long)
+            person, distance, weightage_score , schedule = sorted_distances[i]
             top_persons.append(person)
+
+        for person in top_persons:
+            lat, long = person["current_location"]
+            location_details = get_address(latitude=lat, longitude=long)
+            person["location_details"] = location_details
 
         return top_persons
     
