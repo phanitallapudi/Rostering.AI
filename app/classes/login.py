@@ -78,3 +78,13 @@ async def authorize_user(current_user: str = Depends(get_current_user)):
     if current_user.get('role') != 'Admin':
         raise HTTPException(status_code=403, detail="Permission denied")
     return current_user
+
+async def authorize_both_user(current_user: str = Depends(get_current_user)):
+    if current_user.get('role') not in ["Admin", "Technician"]:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    return current_user
+
+async def authorize_tech_user(current_user: str = Depends(get_current_user)):
+    if current_user.get('role') != "Technician":
+        raise HTTPException(status_code=403, detail="Permission denied")
+    return current_user

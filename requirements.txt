@@ -11,3 +11,4 @@ bcrypt
 scikit-learn
 pandas
 pytest
+uvicorn
