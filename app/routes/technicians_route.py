@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Query, HTTPException, Depends, Request, status
-from app.classes.login import get_current_user, authorize_user, oauth2_scheme, User
+from app.classes.login import get_current_user, authorize_user, authorize_both_user, oauth2_scheme, User
 from fastapi.responses import JSONResponse
 from app.classes.technicians_info import TechniciansInfo
 from app.classes.technician_management import TechnicianManagement, TechnicianProfile
+from app.routes.login_route import login
 from utils.database_utils import technicial_skill_set
 
 router = APIRouter()
@@ -16,7 +17,7 @@ async def get_all_technicians(current_user: User = Depends(get_current_user), to
     response = technicianinfoObj.get_all_technicians()
     return JSONResponse(content=response, status_code=200)
 
-@router.get("/nearest_technician", dependencies=[Depends(authorize_user)])
+@router.get("/nearest_technician", dependencies=[Depends(authorize_both_user)])
 async def get_nearest_technician(lat: float = Query(..., title="latitude", description="Enter the latitude"),
                                   long: float = Query(..., title="longitude", description="Enter the longitude"), 
                                   skill_set: str = Query(..., title="skill_set", description="Enter the skill set"),
