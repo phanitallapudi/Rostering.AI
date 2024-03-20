@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends, Request, status
 from app.classes.login import get_current_user, authorize_user, oauth2_scheme, User, create_access_token, Hash
-from app.classes.dbconfig import user_data
+from app.classes.dbconfig import user_data,db
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.security import OAuth2PasswordBearer
+
 
 router = APIRouter()
 
@@ -10,7 +11,13 @@ router = APIRouter()
 def create_user(request:User,current_user:User = Depends(get_current_user),token: str = Depends(oauth2_scheme)):
     if current_user.get('role') != "Admin":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    
+    existing_user = db["Users_data"].find_one({"username": request.username})
+    print("request: ",request.username)
+    print("existing user: ",existing_user)
+    if existing_user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username " +request.username +" already taken")
+    if not request.username or not request.password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid request")   
     hashed_pass = Hash.bcrypt(request.password)
     user_object = dict(request)
     user_object["password"] = hashed_pass
