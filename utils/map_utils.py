@@ -18,7 +18,7 @@ def get_cluster_id(location):
 
     cluster_id = kmeans.predict([location])[0]
 
-    return cluster_id
+    return int(cluster_id)
 
 def get_random_location():
     latitude = np.random.uniform(12.957078201607976, 12.991691702207596)

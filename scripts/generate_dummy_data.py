@@ -57,15 +57,22 @@ def generate_location():
     return [latitude, longitude]
 
 # Generate synthetic data for technicians
-technicians = pd.DataFrame({
-    "name": [f"{random.choice(first_names)} {random.choice(last_names)}" for _ in range(100)],  # Generate random names
-    "skill_set": [random.choice(skills) for _ in range(100)],
-    "rating": np.round(np.random.uniform(1, 5, size=100), 2),
-    "feedback_sentiment": np.random.choice(["positive", "neutral", "negative"], 100),
-    "experience_years": np.random.randint(1, 11, size=100),
-    "current_location": [generate_location() for _ in range(100)],
-    "day_schedule": np.random.choice(["free", "booked"], 100),
-    "phoneno" : [generate_phone_number() for _ in range(100)]
-})
+technicians = pd.DataFrame(columns=["uid", "name", "skill_set", "rating", "feedback_sentiment", "experience_years", "current_location", "day_schedule", "phoneno"])
+generated_uids = set()
+
+while len(technicians) < 100:
+    uid = random.randint(100000, 999999)  # Generate 6-digit random numbers
+    if uid not in generated_uids:
+        generated_uids.add(uid)
+        name = f"{random.choice(first_names)} {random.choice(last_names)}"
+        skill_set = random.choice(skills)
+        rating = np.round(np.random.uniform(1, 5), 2)
+        feedback_sentiment = np.random.choice(["positive", "neutral", "negative"])
+        experience_years = np.random.randint(1, 11)
+        current_location = generate_location()
+        day_schedule = np.random.choice(["free", "booked"])
+        phoneno = generate_phone_number()
+        
+        technicians.loc[len(technicians)] = [uid, name, skill_set, rating, feedback_sentiment, experience_years, current_location, day_schedule, phoneno]
 
 technicians.to_csv('technicians_data.csv', index=False)
