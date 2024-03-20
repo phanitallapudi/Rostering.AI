@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routes.technicians_route import router as technicians_route
 from app.routes.llm_query_route import router as llm_query_route
 from app.routes.login_route import router as login_route
+from app.routes.tickets_route import router as tickets_route
 
 app = FastAPI(swagger_ui_parameters={"syntaxHighlight": False})
 
@@ -18,6 +19,7 @@ app.add_middleware(
 app.include_router(technicians_route)
 app.include_router(llm_query_route)
 app.include_router(login_route)
+app.include_router(tickets_route)
 
 @app.get("/")
 async def root():
