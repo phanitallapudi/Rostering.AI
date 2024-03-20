@@ -12,8 +12,14 @@ class TechnicianManagement:
     def __init__(self) -> None:
         pass
 
+    def format_phone_number(self, phoneno: str) -> str:
+        if not phoneno.startswith("+91-"):
+            phoneno = "+91-" + phoneno
+        return phoneno
+
     def create_profile(self, username, profile: TechnicianProfile):
         user = user_data.find_one({"username": username})
+        formatted_phoneno = self.format_phone_number(profile.phoneno)
         profile_data = {
             "name": profile.name,
             "skill_set": profile.skill_set,
@@ -22,7 +28,7 @@ class TechnicianManagement:
             "experience_years": profile.experience_years,
             "current_location": get_random_location(),
             "day_schedule": "free",
-            "phoneno": profile.phoneno,
+            "phoneno": formatted_phoneno,
             "user" : user["_id"]
         }
         result = technicians_info.insert_one(profile_data)
