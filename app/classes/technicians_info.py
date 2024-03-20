@@ -10,6 +10,9 @@ class TechniciansInfo:
         technicians = list(technicians_info.find({}))
         for technician in technicians:
             technician['_id'] = str(technician['_id'])
+            user_id = technician.get('user')
+            if user_id:
+                technician['user'] = str(user_id)
         return technicians
     
     def get_all_technicians_skills(self, skill_set):
@@ -17,6 +20,9 @@ class TechniciansInfo:
         technicians = list(technicians_info.find(query))
         for technician in technicians:
             technician['_id'] = str(technician['_id'])
+            user_id = technician.get('user')
+            if user_id:
+                technician['user'] = str(user_id)
         return technicians
     
     def get_all_technicians_skills_clusterid(self, skill_set, cluster_id):
@@ -24,6 +30,9 @@ class TechniciansInfo:
         technicians = list(technicians_info.find(query))
         for technician in technicians:
             technician['_id'] = str(technician['_id'])
+            user_id = technician.get('user')
+            if user_id:
+                technician['user'] = str(user_id)
         return technicians
     
     def calculate_distance(self, lat1, lon1, lat2, lon2):

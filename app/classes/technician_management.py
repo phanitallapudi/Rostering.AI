@@ -17,8 +17,8 @@ class TechnicianManagement:
         profile_data = {
             "name": profile.name,
             "skill_set": profile.skill_set,
-            "rating" : None,
-            "feedback_sentiment": None,
+            "rating" : 2.5,
+            "feedback_sentiment": "neutral",
             "experience_years": profile.experience_years,
             "current_location": get_random_location(),
             "day_schedule": "free",
