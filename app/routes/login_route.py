@@ -13,9 +13,6 @@ def create_user(request:User,current_user:User = Depends(get_current_user),token
     hashed_pass = Hash.bcrypt(request.password)
     user_object = dict(request)
     user_object["password"] = hashed_pass
-    user_object["avaliable"]= request.avaliable
-    user_object["skillset"] = request.skillset
-    user_object["phonenumber"] = request.phonenumber
     user_object["role"] = request.role
     user_id = user_data.insert_one(user_object)
 	# print(user_id)
@@ -28,7 +25,7 @@ def login(request: OAuth2PasswordRequestForm = Depends()):
     user = user_data.find_one({"username": request.username})
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'No user found with this {request.username} username')
-    if not user_data.verify(user["password"], request.password):
+    if not Hash.verify(user["password"], request.password):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f'Wrong Username or password')
     
     # Get the user's role

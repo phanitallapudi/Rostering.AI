@@ -58,16 +58,13 @@ class TokenData(BaseModel):
 class User(BaseModel):
     username: str
     role: str = "Technician"
-    phonenumber: str
-    skillset: str
-    avaliable: bool
     password: str
     
-    # @field_validator("role")
-    # def validate_role(cls, v):
-    #     if v != "Technician":
-    #         raise ValueError("Role must be Technician")
-    #     return v  
+    @field_validator("role")
+    def validate_role(cls, v):
+        if v != "Technician":
+            raise ValueError("Role must be Technician")
+        return v  
 
 class Login(BaseModel):
     username: str
