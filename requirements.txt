@@ -9,3 +9,4 @@ passlib
 python-multipart
 bcrypt
 scikit-learn
+pandas
