@@ -1,5 +1,6 @@
 from app.classes.dbconfig import user_data, technicians_info
 from utils.map_utils import get_random_location, get_cluster_id
+from utils.database_utils import generate_unique_id
 from pydantic import BaseModel, field_validator
 
 class TechnicianProfile(BaseModel):
@@ -19,12 +20,24 @@ class TechnicianManagement:
 
     def create_profile(self, username, profile: TechnicianProfile):
         user = user_data.find_one({"username": username})
+        if not user:
+            return {"message": f"User '{username}' not found."}
+
         profile_data = technicians_info.find_one({"user" : user["_id"]})
+
         if profile_data:
             return {"message" : f"profile for {username} already exists, please update it."}
         formatted_phoneno = self.format_phone_number(profile.phoneno)
+
         location = get_random_location()
+
+        while True:
+            uid = generate_unique_id()
+            if not technicians_info.find_one({"uid": uid}):
+                break
+        
         profile_data = {
+            "uid" : uid,
             "name": profile.name,
             "skill_set": profile.skill_set,
             "rating" : 2.5,
