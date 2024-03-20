@@ -41,8 +41,6 @@ async def updates_the_cluster_id_of_technician(current_user: User = Depends(get_
 async def updates_the_cluster_id_of_technician(profile: TechnicianProfile, current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
     if current_user.get('role') != "Technician":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    username = current_user.get('username')
-    print(username)
+    username = current_user.get('sub')
     response = technicianManagementObj.create_profile(username=username, profile=profile)
-    print(response)
     return JSONResponse(content=response, status_code=200)

@@ -14,7 +14,6 @@ class TechnicianManagement:
 
     def create_profile(self, username, profile: TechnicianProfile):
         user = user_data.find_one({"username": username})
-        print(user)
         profile_data = {
             "name": profile.name,
             "skill_set": profile.skill_set,
@@ -28,5 +27,5 @@ class TechnicianManagement:
         }
         result = technicians_info.insert_one(profile_data)
         if result:
-            return True
-        return False
+            return {"message" : f"Created profile for {username} with profile name as {profile.name}"}
+        return {"message" : f"Cannot able to create profile for {username}"}
