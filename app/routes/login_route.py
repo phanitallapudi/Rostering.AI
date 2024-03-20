@@ -9,15 +9,18 @@ router = APIRouter()
 @router.post('/register', dependencies=[Depends(authorize_user)],)
 def create_user(request:User,current_user:User = Depends(get_current_user),token: str = Depends(oauth2_scheme)):
     if current_user.get('role') != "Admin":
-        return {"res" : current_user + "is not admin"}
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    
     hashed_pass = Hash.bcrypt(request.password)
     user_object = dict(request)
     user_object["password"] = hashed_pass
     user_object["role"] = request.role
     user_id = user_data.insert_one(user_object)
-	# print(user_id)
- 
-    return {"res":"created"}
+
+    if user_id:
+        return {"message": "User created successfully"}
+    else:
+        return {"message": "Failed to create user"}
 
 
 @router.post('/login')
