@@ -2,10 +2,12 @@ from fastapi import APIRouter, Query, HTTPException, Depends, Request, status
 from app.classes.login import get_current_user, authorize_user, oauth2_scheme, User
 from fastapi.responses import JSONResponse
 from app.classes.technicians_info import TechniciansInfo
+from app.classes.technician_management import TechnicianManagement, TechnicianProfile
 from utils.database_utils import technicial_skill_set
 
 router = APIRouter()
 technicianinfoObj = TechniciansInfo()
+technicianManagementObj = TechnicianManagement()
 
 @router.get("/all_technicians", dependencies=[Depends(authorize_user)])
 async def get_all_technicians(current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
@@ -33,4 +35,14 @@ async def updates_the_cluster_id_of_technician(current_user: User = Depends(get_
     if current_user.get('role') != "Admin":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     response = technicianinfoObj.update_cluster_id_technician()
+    return JSONResponse(content=response, status_code=200)
+
+@router.post("/create_profile")
+async def updates_the_cluster_id_of_technician(profile: TechnicianProfile, current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    if current_user.get('role') != "Technician":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    username = current_user.get('username')
+    print(username)
+    response = technicianManagementObj.create_profile(username=username, profile=profile)
+    print(response)
     return JSONResponse(content=response, status_code=200)
