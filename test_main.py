@@ -67,6 +67,14 @@ def test_get_all_technicians():
     assert response.status_code == 200
     assert response.json() is not None
 
+def test_get_all_technicians_wrongtoken():
+    headers = {"accept": "application/json"}
+    headers["Authorization"] = f"Bearer admin_access_token"
+
+    response = client.get("/all_technicians", headers=headers)
+    assert response.status_code == 401
+    assert response.json() is not None
+
 def test_nearest_technician():
     headers = {"accept": "application/json"}
     headers["Authorization"] = f"Bearer {technician_access_token}"
@@ -77,3 +85,45 @@ def test_nearest_technician():
     )
     assert response.status_code == 200
     assert response.json() is not None
+
+def test_nearest_technician_wrongtoken():
+    headers = {"accept": "application/json"}
+    headers["Authorization"] = f"Bearer technician_access_token"
+
+    response = client.get(
+        f"/nearest_technician?lat=12.976818358798672&long=77.72269960072731&skill_set=router%20setup",
+        headers=headers
+    )
+    assert response.status_code == 401
+    assert response.json() is not None
+
+
+# def test_query_endpoint():
+#     headers = {"accept": "application/json"}
+#     headers["Authorization"] = f"Bearer {technician_access_token}"
+
+#     response = client.get(
+#         "/query?query=I%20need%20help%20in%20installing%20this%20software&lat=12.963463101392353&long=77.7219928645499",
+#         headers=headers
+#     )
+
+#     assert response.status_code == 200
+#     assert response.json() is not None
+
+def test_update_cluster_id_technician():
+    headers = {"accept": "application/json"}
+    headers["Authorization"] = f"Bearer {admin_access_token}"
+
+    response = client.get("/update_cluster_id_technician", headers=headers)
+
+    assert response.status_code == 200
+    assert response.json() is not None
+
+def test_update_cluster_id_technician_unauthorized():
+    headers = {"accept": "application/json"}
+    headers["Authorization"] = f"Bearer {technician_access_token}"
+
+    response = client.get("/update_cluster_id_technician", headers=headers)
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Permission denied"
