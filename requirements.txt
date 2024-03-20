@@ -10,3 +10,4 @@ python-multipart
 bcrypt
 scikit-learn
 pandas
+pytest

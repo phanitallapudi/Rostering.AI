@@ -10,6 +10,9 @@ class TechniciansInfo:
         technicians = list(technicians_info.find({}))
         for technician in technicians:
             technician['_id'] = str(technician['_id'])
+            user_id = technician.get('user')
+            if user_id:
+                technician['user'] = str(user_id)
         return technicians
     
     def get_all_technicians_skills(self, skill_set):
@@ -17,6 +20,9 @@ class TechniciansInfo:
         technicians = list(technicians_info.find(query))
         for technician in technicians:
             technician['_id'] = str(technician['_id'])
+            user_id = technician.get('user')
+            if user_id:
+                technician['user'] = str(user_id)
         return technicians
     
     def get_all_technicians_skills_clusterid(self, skill_set, cluster_id):
@@ -24,6 +30,9 @@ class TechniciansInfo:
         technicians = list(technicians_info.find(query))
         for technician in technicians:
             technician['_id'] = str(technician['_id'])
+            user_id = technician.get('user')
+            if user_id:
+                technician['user'] = str(user_id)
         return technicians
     
     def calculate_distance(self, lat1, lon1, lat2, lon2):
@@ -111,10 +120,10 @@ class TechniciansInfo:
     def update_cluster_id_technician(self):
         cluster_column = "cluster_id"
         updated_count = 0
-        for entry in technicians_info.find():
+        for entry in technicians_info.find({cluster_column: {"$exists": False}}):  # Only get entries without the new column
             location = entry["current_location"]
             retrieved_cluster_id = get_cluster_id(location)
             response = technicians_info.update_one({"_id": entry["_id"]}, {"$set": {cluster_column: int(retrieved_cluster_id)}})
             if response.modified_count > 0:
                 updated_count += 1
-        return {"response" : f"{updated_count} documents updated."}
+        return {"response": f"{updated_count} documents updated."}
