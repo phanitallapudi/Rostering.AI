@@ -13,7 +13,7 @@ def test_login_successful():
     # Assuming a valid username and password combination
     global technician_access_token, technician_token_type, admin_access_token, admin_token_type
     response = client.post(
-        "login/login",
+        "/login",
         data={"username": "panindhra", "password": "Panindhra@1234"}
     )
     technician_access_token = response.json()["access_token"]
@@ -23,7 +23,7 @@ def test_login_successful():
     assert response.json()["token_type"] == "bearer"
 
     response = client.post(
-        "login/login",
+        "/login",
         data={"username": "admin", "password": "Admin@123"}
     )
     admin_access_token = response.json()["access_token"]
@@ -35,7 +35,7 @@ def test_login_successful():
 def test_login_user_not_found():
     # Assuming the provided username doesn't exist in the database
     response = client.post(
-        "login/login",
+        "/login",
         data={"username": "non_existing_username", "password": "valid_password"}
     )
     assert response.status_code == 404
@@ -43,7 +43,7 @@ def test_login_user_not_found():
 def test_login_invalid_credentials():
     # Assuming the username exists but the password is incorrect
     response = client.post(
-        "login/login",
+        "/login",
         data={"username": "panindhra", "password": "invalid_password"}
     )
     assert response.status_code == 401
@@ -51,12 +51,12 @@ def test_login_invalid_credentials():
 
 def test_login_missing_fields():
     # Assuming username and/or password fields are missing
-    response = client.post("login/login", data={})
+    response = client.post("/login", data={})
     assert response.status_code == 422
 
 def test_login_invalid_payload():
     # Assuming the payload format is incorrect
-    response = client.post("login/login", json={"user": "username", "pass": "password"})
+    response = client.post("/login", json={"user": "username", "pass": "password"})
     assert response.status_code == 422
 
 def test_get_all_technicians():
