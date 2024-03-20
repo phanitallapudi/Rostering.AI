@@ -24,17 +24,27 @@ async def toggle_auto_assign(status: bool, current_user: User = Depends(get_curr
     auto_assign_active = status
     return {"message": f"Auto-assign feature is {'enabled' if status else 'disabled'}"}
 
-@router.post("/create_ticket")
-async def create_ticket(ticket: Ticket):
+@router.post("/create_ticket", dependencies=[Depends(authorize_user)])
+async def create_ticket(ticket: Ticket, current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    if current_user.get('role') != "Admin":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    
     response = ticketManagerObj.create_ticket(ticket=ticket, auto_assign=auto_assign_active)
     return JSONResponse(content=response, status_code=200)
 
-@router.get("/all_tickets")
-async def get_all_generated_tickets():
+@router.get("/all_tickets", dependencies=[Depends(authorize_user)])
+async def get_all_generated_tickets(current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    if current_user.get('role') != "Admin":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    
     response = ticketManagerObj.get_all_tickets()
     return JSONResponse(content=response, status_code=200)
 
-@router.get("/get_single_ticket")
-async def get_single_ticket(_id: str = Query(..., title="data", description="Enter the _id of the ticket")):
+@router.get("/get_single_ticket", dependencies=[Depends(authorize_user)])
+async def get_single_ticket(_id: str = Query(..., title="data", description="Enter the _id of the ticket"), 
+                            current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    if current_user.get('role') != "Admin":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    
     response = ticketManagerObj.get_single_ticket(_id)
     return JSONResponse(content=response, status_code=200)
