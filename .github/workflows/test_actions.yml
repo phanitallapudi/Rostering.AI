@@ -12,6 +12,15 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+
+    env:
+      AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+      AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+      MONGO_CLUSTER_ADDRESS: ${{ secrets.MONGO_CLUSTER_ADDRESS }}
+      MONGO_CLUSTER_NAME: ${{ secrets.MONGO_CLUSTER_NAME }}
+      MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+      MONGO_URI: ${{ secrets.MONGO_URI }}
+      MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
     
     steps:
     - name: Checkout code
