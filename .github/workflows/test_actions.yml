@@ -1,6 +1,9 @@
 name: Rostering.AI Tests
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
