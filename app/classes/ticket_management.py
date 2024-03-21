@@ -62,9 +62,9 @@ class TicketManagement(TechniciansInfo):
         tickets = list(tickets_data.find({}))
         for ticket in tickets:
             ticket['_id'] = str(ticket['_id'])
-            user_id = ticket.get('user')
+            user_id = ticket.get('assigned_to')
             if user_id:
-                ticket['user'] = str(user_id)
+                ticket['assigned_to'] = str(user_id)
         return tickets
     
     def get_single_ticket(self, _id):
@@ -72,9 +72,11 @@ class TicketManagement(TechniciansInfo):
         # Perform the query
         ticket = tickets_data.find_one({"_id": _id})
         ticket["_id"] = str(ticket["_id"])
-        user_id = ticket.get('user')
+        user_id = ticket.get('assigned_to')
         if user_id:
-            ticket['user'] = str(user_id)
+            technician = technicians_info.find_one({"_id": user_id})
+            technician["_id"] = str(technician["_id"])
+            ticket['assigned_to'] = technician
         return ticket
 
     
