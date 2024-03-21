@@ -29,7 +29,26 @@ class TicketManagement(TechniciansInfo):
             matches_technician = self.get_nearest_technician(user_lat=coordinates[0], user_lon=coordinates[1], skill_set=ticket.title)
 
             if len(matches_technician) == 0:
-                return {"message" : "No matching found in your location, ticket sent to manual assignment"}
+                while True:
+                    uid = generate_unique_id()
+                    if not tickets_data.find_one({"uid": uid}):
+                        break
+
+                ticket_information = {
+                    "uid" : uid,
+                    "title": ticket.title,
+                    "description": ticket.description,
+                    "status": ticket.status,
+                    "priority": ticket.priority,
+                    "assigned_to": None,
+                    "location": ticket.location
+                }
+                result = tickets_data.insert_one(ticket_information)
+
+                if result:
+                    return {"message" : f"No matching found in your location, ticket sent to manual assignment with id {uid}"}
+                return {"message" : f"Cannot able to create ticket"}
+
             top_technician = matches_technician[0]
 
             while True:
