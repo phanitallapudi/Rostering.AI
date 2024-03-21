@@ -1,6 +1,6 @@
-# API Documentation
+# Rostering.AI API Documentation
 
-This document provides an overview of the endpoints available in the API.
+This document provides an in-depth guide to the Rostering.AI API, outlining available endpoints, their functionalities, and authentication requirements.
 
 ## Endpoints
 
