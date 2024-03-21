@@ -6,6 +6,8 @@ from utils.database_utils import technicial_skill_set
 router = APIRouter()
 technicianinfoObj = TechniciansInfo()
 
+global select_technician
+
 @router.get("/all_technicians")
 async def get_all_technicians():
     response = technicianinfoObj.get_all_technicians()
