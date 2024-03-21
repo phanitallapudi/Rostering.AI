@@ -24,62 +24,15 @@ class TicketManagement(TechniciansInfo):
         pass
 
     def create_ticket(self, ticket: Ticket, auto_assign):
-        if auto_assign:
-            coordinates = ticket.location
-            matches_technician = self.get_nearest_technician(user_lat=coordinates[0], user_lon=coordinates[1], skill_set=ticket.title)
-
-            if len(matches_technician) == 0:
-                while True:
-                    uid = generate_unique_id()
-                    if not tickets_data.find_one({"uid": uid}):
-                        break
-
-                ticket_information = {
-                    "uid" : uid,
-                    "title": ticket.title,
-                    "description": ticket.description,
-                    "status": ticket.status,
-                    "priority": ticket.priority,
-                    "assigned_to": None,
-                    "location": ticket.location
-                }
-                result = tickets_data.insert_one(ticket_information)
-
-                if result:
-                    return {"message" : f"No matching found in your location, ticket sent to manual assignment with id {uid}"}
-                return {"message" : f"Cannot able to create ticket"}
-
-            top_technician = matches_technician[0]
-
+        def generate_unique_ticket_id():
             while True:
                 uid = generate_unique_id()
                 if not tickets_data.find_one({"uid": uid}):
-                    break
-            technician_id = ObjectId(top_technician["_id"])
+                    return uid
 
-            ticket_information = {
-                "uid" : uid,
-                "title": ticket.title,
-                "description": ticket.description,
-                "status": ticket.status,
-                "priority": ticket.priority,
-                "assigned_to": technician_id,
-                "location": ticket.location
-            }
-            technicians_info.update_one({"_id": technician_id}, {"$set": {"day_schedule": "booked"}})
-            result = tickets_data.insert_one(ticket_information)
-
-            if result:
-                return {"message" : f"Created ticket with id: {uid}"}
-            return {"message" : f"Cannot able to create ticket"}
-
-        while True:
-            uid = generate_unique_id()
-            if not tickets_data.find_one({"uid": uid}):
-                break
-
+        coordinates = ticket.location
         ticket_information = {
-            "uid" : uid,
+            "uid": generate_unique_ticket_id(),
             "title": ticket.title,
             "description": ticket.description,
             "status": ticket.status,
@@ -87,11 +40,23 @@ class TicketManagement(TechniciansInfo):
             "assigned_to": None,
             "location": ticket.location
         }
-        result = tickets_data.insert_one(ticket_information)
 
+        if auto_assign:
+            matches_technician = self.get_nearest_technician(user_lat=coordinates[0], user_lon=coordinates[1], skill_set=ticket.title)
+
+            if not matches_technician:
+                tickets_data.insert_one(ticket_information)
+                return {"message": f"No matching technician found. Ticket #{ticket_information['uid']} sent for manual assignment."}
+
+            top_technician = matches_technician[0]
+            technician_id = ObjectId(top_technician["_id"])
+            ticket_information["assigned_to"] = technician_id
+            technicians_info.update_one({"_id": technician_id}, {"$set": {"day_schedule": "booked"}})
+
+        result = tickets_data.insert_one(ticket_information)
         if result:
-            return {"message" : f"Created ticket with id: {uid}"}
-        return {"message" : f"Cannot able to create ticket"}
+            return {"message": f"Created ticket with id: {ticket_information['uid']}"}
+        return {"message": f"Cannot able to create ticket"}
 
     def get_all_tickets(self):
         tickets = list(tickets_data.find({}))
