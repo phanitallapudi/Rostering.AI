@@ -15,7 +15,7 @@ port = 8000
 
 client = MongoClient(mongodb_uri, port)
 
-db = client["techniciansdata"]
+db = client["RosteringAI_DB"]
 
 technicians_info = db["technician_info"]
 location_data = db["Location_data"]

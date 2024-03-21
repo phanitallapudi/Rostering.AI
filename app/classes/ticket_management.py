@@ -1,6 +1,7 @@
-from app.classes.dbconfig import user_data, tickets_data
+from app.classes.dbconfig import user_data, tickets_data, technicians_info
 from utils.map_utils import get_random_location, get_cluster_id
 from utils.database_utils import generate_unique_id
+from app.classes.technicians_info import TechniciansInfo
 from pydantic import BaseModel, field_validator
 from bson import ObjectId
 
@@ -9,14 +10,50 @@ class Ticket(BaseModel):
     description: str
     status: str = "open"
     priority: int = 1
+    location: list[float] = get_random_location()
 
-class TicketManagement:
+    @field_validator('title')
+    def validate_title(cls, v):
+        allowed_titles = ["router setup", "cable repair", "software troubleshooting", "fiber optics", "customer service"]
+        if v not in allowed_titles:
+            raise ValueError(f"Title must be one of: {', '.join(allowed_titles)}")
+        return v
+
+class TicketManagement(TechniciansInfo):
     def __init__(self) -> None:
         pass
 
     def create_ticket(self, ticket: Ticket, auto_assign):
         if auto_assign:
-            pass # write auto assign logic here
+            coordinates = ticket.location
+            matches_technician = self.get_nearest_technician(user_lat=coordinates[0], user_lon=coordinates[1], skill_set=ticket.title)
+
+            if len(matches_technician) == 0:
+                return {"message" : "No matching found in your location, ticket sent to manual assignment"}
+            top_technician = matches_technician[0]
+
+            while True:
+                uid = generate_unique_id()
+                if not tickets_data.find_one({"uid": uid}):
+                    break
+            technician_id = ObjectId(top_technician["_id"])
+
+            ticket_information = {
+                "uid" : uid,
+                "title": ticket.title,
+                "description": ticket.description,
+                "status": ticket.status,
+                "priority": ticket.priority,
+                "assigned_to": technician_id,
+                "location": ticket.location
+            }
+            technicians_info.update_one({"_id": technician_id}, {"$set": {"day_schedule": "booked"}})
+            result = tickets_data.insert_one(ticket_information)
+
+            if result:
+                return {"message" : f"Created ticket with id: {uid}"}
+            return {"message" : f"Cannot able to create ticket"}
+
         while True:
             uid = generate_unique_id()
             if not tickets_data.find_one({"uid": uid}):
@@ -28,7 +65,8 @@ class TicketManagement:
             "description": ticket.description,
             "status": ticket.status,
             "priority": ticket.priority,
-            "assigned_to": None
+            "assigned_to": None,
+            "location": ticket.location
         }
         result = tickets_data.insert_one(ticket_information)
 
