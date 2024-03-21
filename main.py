@@ -6,7 +6,10 @@ from app.routes.llm_query_route import router as llm_query_route
 from app.routes.login_route import router as login_route
 from app.routes.tickets_route import router as tickets_route
 
-app = FastAPI(swagger_ui_parameters={"syntaxHighlight": False})
+app = FastAPI(
+    title="Rostering.AI",
+    swagger_ui_parameters={"syntaxHighlight": False}
+    )
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,4 +26,9 @@ app.include_router(tickets_route, prefix="/tickets", tags=["Tickets"])
 
 @app.get("/")
 async def root():
+    """
+    Brief Description: This endpoint redirects users to the API documentation.
+
+    Longer Description: This endpoint redirects users to the API documentation page ("/docs") where they can find detailed documentation about the available endpoints and how to interact with them.
+    """
     return RedirectResponse(url="/docs")

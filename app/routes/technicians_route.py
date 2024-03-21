@@ -12,6 +12,15 @@ technicianManagementObj = TechnicianManagement()
 
 @router.get("/all_technicians", dependencies=[Depends(authorize_user)])
 async def get_all_technicians(current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    """
+    Retrieves all technicians' information.
+
+    This endpoint fetches information for all technicians registered in the system. It requires authentication via OAuth2 token, and the user must have the role of "Admin" to access this endpoint. If the user does not have the appropriate permissions, it returns a 401 Unauthorized error. Upon successful authorization, it retrieves all technicians' information from the database and returns it as a JSON response with a status code of 200.
+    
+    **Returns:**
+    - `dict`: A dictionary containing the information of all technicians.
+
+    """
     if current_user.get('role') != "Admin":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     response = technicianinfoObj.get_all_technicians()
@@ -22,6 +31,20 @@ async def get_nearest_technician(lat: float = Query(..., title="latitude", descr
                                   long: float = Query(..., title="longitude", description="Enter the longitude"), 
                                   skill_set: str = Query(..., title="skill_set", description="Enter the skill set"),
                                   current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    """
+    Retrieves the nearest technician based on provided location and skill set.
+
+    This endpoint retrieves the nearest technician's information based on the latitude, longitude, and skill set provided in the query parameters. Authentication is required via OAuth2 token, and both Admin and Technician roles are allowed to access this endpoint. If the user does not have the appropriate permissions or if the provided skill set is not found, it returns a 401 Unauthorized or 404 Not Found error, respectively. Upon successful authorization and skill set validation, it calculates the nearest technician's information from the database and returns it as a JSON response with a status code of 200.
+    
+    **Query Parameters:**
+    - `lat` (float): Latitude of the location.
+    - `long` (float): Longitude of the location.
+    - `skill_set` (str): Skill set required for the technician.
+    
+    **Returns:**
+    - `dict`: A dictionary containing the information of the nearest technician.
+
+    """
     if current_user.get('role') not in ["Admin", "Technician"]:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     if skill_set not in technicial_skill_set:
@@ -33,6 +56,15 @@ async def get_nearest_technician(lat: float = Query(..., title="latitude", descr
 
 @router.get("/update_cluster_id_technician", dependencies=[Depends(authorize_user)])
 async def updates_the_cluster_id_of_technician(current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    """
+    Updates the cluster ID of a technicians.
+
+    This endpoint updates the cluster ID of a technician, typically performed by an admin user. It requires authentication via OAuth2 token, and only users with the "Admin" role are allowed to access this endpoint. If the user does not have the appropriate permissions, it returns a 401 Unauthorized error. Upon successful authorization, it updates the cluster ID of the technician('s) in the database and returns a JSON response with a status code of 200.
+    
+    **Returns:**
+    - `dict`: A dictionary confirming the count of successful update of the cluster ID.
+
+    """
     if current_user.get('role') != "Admin":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     response = technicianinfoObj.update_cluster_id_technician()
@@ -40,6 +72,21 @@ async def updates_the_cluster_id_of_technician(current_user: User = Depends(get_
 
 @router.post("/create_profile")
 async def create_profile_for_technician(profile: TechnicianProfile, current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    """
+    Creates a profile for a technician.
+
+    This endpoint allows a technician to create their profile. Authentication is required via OAuth2 token, and only users with the "Technician" role are allowed to access this endpoint. The technician's profile information, including name, skill set, experience years, and phone number, should be provided in the request body. Upon successful profile creation, it returns a JSON response with a status code of 200.
+    
+    **Request Body (JSON):**
+    - `name` (str): The name of the technician.
+    - `skill_set` (str): The skill set of the technician.
+    - `experience_years` (int): The number of years of experience of the technician.
+    - `phoneno` (str): The phone number of the technician.
+    
+    **Returns:**
+    - `dict`: A dictionary confirming the successful creation of the technician's profile.
+
+    """
     if current_user.get('role') != "Technician":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     username = current_user.get('sub')
