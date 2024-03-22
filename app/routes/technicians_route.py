@@ -113,4 +113,4 @@ async def get_calculate_route(origin: str = Query(..., title="origin location", 
      if current_user.get('role') not in ["Admin", "Technician"]:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
      response = calculate_route(origin, destination)
-     return JSONResponse(content=response)
+     return JSONResponse(content=response, status_code=200)
