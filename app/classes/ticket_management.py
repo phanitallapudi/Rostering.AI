@@ -79,4 +79,28 @@ class TicketManagement(TechniciansInfo):
             ticket['assigned_to'] = technician
         return ticket
 
+    def assign_ticket_manually(self, ticket_id, technician_id):
+        ticket = tickets_data.find_one({"_id" : ObjectId(ticket_id)})
+        ticket["_id"] = str(ticket["_id"])
+        assigned_to = ticket.get('assigned_to')
+
+        if str(assigned_to) == technician_id:
+            return {"message": f"Ticket {ticket_id} is already assigned to {technician_id}"}
+
+        assigned_technician = technicians_info.find_one({"_id": ObjectId(technician_id)})
+        if not assigned_technician:
+            return {"message": f"No technician found with {technician_id}"}
+        if assigned_technician["day_schedule"] == "booked":
+            return {"message": f"Technician with {technician_id} is not available"}
+
+        if assigned_to:
+            assigned_technician = technicians_info.find_one({"_id": ObjectId(assigned_to)})
+            technicians_info.update_one({"_id": ObjectId(assigned_to)}, {"$set": {"day_schedule": "free"}})
+
+        tickets_data.update_one({"_id" : ObjectId(ticket_id)}, {"$set": {"assigned_to": ObjectId(technician_id)}})
+        technicians_info.update_one({"_id": ObjectId(technician_id)}, {"$set": {"day_schedule": "booked"}})
+
+        return {"message": f"Assigned technician {technician_id} to ticket {ticket_id}"}
+            
+
     
