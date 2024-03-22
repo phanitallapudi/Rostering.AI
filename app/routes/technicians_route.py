@@ -3,6 +3,7 @@ from app.classes.login import get_current_user, authorize_user, authorize_both_u
 from fastapi.responses import JSONResponse
 from app.classes.technicians_info import TechniciansInfo
 from app.classes.technician_management import TechnicianManagement, TechnicianProfile
+from app.classes.calculate_management import calculate_route
 from app.routes.login_route import login
 from utils.database_utils import technicial_skill_set
 
@@ -92,3 +93,24 @@ async def create_profile_for_technician(profile: TechnicianProfile, current_user
     username = current_user.get('sub')
     response = technicianManagementObj.create_profile(username=username, profile=profile)
     return JSONResponse(content=response, status_code=200)
+
+@router.get("/calculate-route", dependencies=[Depends(authorize_both_user)])
+async def get_calculate_route(origin: str = Query(..., title="origin location", description="Enter the latitude"),
+                              destination: str = Query(..., title="destination location", description="Enter the latitude"),
+                              current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    
+     """
+     Calculate the fastest route between the provided origin and destination coordinates.
+
+     **Request Body (JSON):**
+    - `origin` (str): origin coordinates.
+    - `destination` (str): destination coordinates.
+    
+    **Returns:**
+    - `dict`: A response providing the distance in meters, total travel time in seconds and travel points.
+    
+     """
+     if current_user.get('role') not in ["Admin", "Technician"]:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+     response = calculate_route(origin, destination)
+     return JSONResponse(content=response)
