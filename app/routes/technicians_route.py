@@ -3,9 +3,9 @@ from app.classes.login import get_current_user, authorize_user, authorize_both_u
 from fastapi.responses import JSONResponse
 from app.classes.technicians_info import TechniciansInfo
 from app.classes.technician_management import TechnicianManagement, TechnicianProfile
-from app.classes.calculate_management import calculate_route
 from app.routes.login_route import login
 from utils.database_utils import technicial_skill_set
+from utils.map_utils import calculate_route
 
 router = APIRouter()
 technicianinfoObj = TechniciansInfo()
