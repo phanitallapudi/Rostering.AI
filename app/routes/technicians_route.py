@@ -55,6 +55,27 @@ async def get_nearest_technician(lat: float = Query(..., title="latitude", descr
     response = technicianinfoObj.get_nearest_technician(user_lat=lat, user_lon=long, skill_set=skill_set)
     return JSONResponse(content=response, status_code=200)
 
+@router.get("/get_single_technician", dependencies=[Depends(authorize_user)])
+async def get_single_technician(_id: str = Query(..., title="data", description="Enter the _id of the ticket"), 
+                            current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    """
+    Retrieves information about a single technician.
+
+    This endpoint allows an admin user to retrieve information about a single technician by providing their unique identifier (_id). Authentication is required via OAuth2 token, and only users with the "Admin" role are allowed to access this endpoint. Upon receiving the request, the endpoint fetches information about the specified technician from the technician information manager based on their _id and returns it as a JSON response with a status code of 200.
+
+    **Query Parameters:**
+    - `_id` (str): The unique identifier of the technician.
+
+    **Returns:**
+    - `dict`: A dictionary containing information about the specified technician.
+
+    """
+    if current_user.get('role') != "Admin":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    
+    response = technicianinfoObj.get_single_technician(_id)
+    return JSONResponse(content=response, status_code=200)
+
 @router.get("/update_cluster_id_technician", dependencies=[Depends(authorize_user)])
 async def updates_the_cluster_id_of_technician(current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
     """
