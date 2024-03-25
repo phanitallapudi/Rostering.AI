@@ -120,6 +120,15 @@ async def get_single_ticket(_id: str = Query(..., title="data", description="Ent
 
 @router.get("/information", dependencies=[Depends(authorize_user)])
 async def get_information_about_ticket_status(current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    """
+    Retrieves information about ticket status.
+
+    This endpoint allows an admin user to retrieve information about the status of tickets. Authentication is required via OAuth2 token, and only users with the "Admin" role are allowed to access this endpoint. Upon successful authorization, the endpoint fetches information about the status of all tickets from the ticket manager and returns it as a JSON response with a status code of 200.
+
+    **Returns:**
+    - `dict`: A dictionary containing information about ticket statuses.
+
+    """
     if current_user.get('role') != "Admin":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     

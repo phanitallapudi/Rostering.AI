@@ -1,3 +1,4 @@
+from bson import ObjectId
 from app.classes.dbconfig import technicians_info
 from utils.map_utils import get_address, get_cluster_id
 from math import radians, sin, cos, sqrt, atan2
@@ -109,6 +110,13 @@ class TechniciansInfo:
             person["location_details"] = location_details
 
         return top_persons
+      
+    def get_single_technician(self, _id):
+        _id = ObjectId(_id)
+        # Perform the query
+        ticket = technicians_info.find_one({"_id": _id})
+        ticket["_id"] = str(ticket["_id"])
+        return ticket
     
     def get_nearest_technician(self, user_lat, user_lon, skill_set):
         user_location = (user_lat, user_lon)
