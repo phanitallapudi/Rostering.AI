@@ -9,6 +9,9 @@ jobs:
   send_notification:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
       - name: Get Committer Username
         id: get_username
         run: echo "::set-output name=username::$(git log -1 --pretty=format:'%an')"
