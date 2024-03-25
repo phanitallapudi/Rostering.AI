@@ -117,3 +117,11 @@ async def get_single_ticket(_id: str = Query(..., title="data", description="Ent
     
     response = ticketManagerObj.get_single_ticket(_id)
     return JSONResponse(content=response, status_code=200)
+
+@router.get("/information", dependencies=[Depends(authorize_user)])
+async def get_information_about_ticket_status(current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    if current_user.get('role') != "Admin":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    
+    response = ticketManagerObj.get_status_all_ticket()
+    return JSONResponse(content=response, status_code=200)

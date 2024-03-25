@@ -102,6 +102,18 @@ class TicketManagement(TechniciansInfo):
         technicians_info.update_one({"_id": ObjectId(technician_id)}, {"$set": {"day_schedule": "booked"}})
 
         return {"message": f"Assigned technician {technician_id} to ticket {ticket_id}"}
-            
-
     
+    def get_status_all_ticket(self):
+        pipeline = [
+        {"$group": {"_id": "$status", "count": {"$sum": 1}}},
+        {"$project": {"status": "$_id", "count": 1, "_id": 0}}
+        ]
+
+        ticket_counts = list(tickets_data.aggregate(pipeline))
+
+        json_response = {}
+        for ticket_count in ticket_counts:
+            json_response[ticket_count["status"]] = ticket_count["count"]
+
+        return json_response
+
