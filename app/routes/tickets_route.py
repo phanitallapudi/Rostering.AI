@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 
 router = APIRouter()
 ticketManagerObj = TicketManagement()
-auto_assign_active = True
+auto_assign_active = False
 
 @router.get("/auto_assign_status", dependencies=[Depends(authorize_user)])
 async def get_auto_toggle_status(current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):

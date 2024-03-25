@@ -51,6 +51,7 @@ class TicketManagement(TechniciansInfo):
             top_technician = matches_technician[0]
             technician_id = ObjectId(top_technician["_id"])
             ticket_information["assigned_to"] = technician_id
+            ticket_information["status"] = "assigned"
             technicians_info.update_one({"_id": technician_id}, {"$set": {"day_schedule": "booked"}})
 
         result = tickets_data.insert_one(ticket_information)
@@ -97,7 +98,7 @@ class TicketManagement(TechniciansInfo):
             assigned_technician = technicians_info.find_one({"_id": ObjectId(assigned_to)})
             technicians_info.update_one({"_id": ObjectId(assigned_to)}, {"$set": {"day_schedule": "free"}})
 
-        tickets_data.update_one({"_id" : ObjectId(ticket_id)}, {"$set": {"assigned_to": ObjectId(technician_id)}})
+        tickets_data.update_one({"_id" : ObjectId(ticket_id)}, {"$set": {"assigned_to": ObjectId(technician_id), "status": "assigned"}})
         technicians_info.update_one({"_id": ObjectId(technician_id)}, {"$set": {"day_schedule": "booked"}})
 
         return {"message": f"Assigned technician {technician_id} to ticket {ticket_id}"}
