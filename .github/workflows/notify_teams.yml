@@ -18,4 +18,6 @@ jobs:
           WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
           USERNAME: ${{ steps.get_username.outputs.username }}
         run: |
-          curl -X POST -H 'Content-Type: application/json' -d '{"text":"Hey @team, new code for backend has been merged into the main branch by '$USERNAME'!"}' $WEBHOOK_URL
+          curl -X POST -H 'Content-Type: application/json' -d '{
+            "text": "Hey everyone, new code for the backend has been merged into the main branch by '$USERNAME'!"
+          }' $WEBHOOK_URL
