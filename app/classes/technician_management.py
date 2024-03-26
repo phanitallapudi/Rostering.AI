@@ -3,6 +3,7 @@ from utils.map_utils import get_random_location, get_cluster_id
 from utils.database_utils import generate_unique_id, parse_excel_or_csv
 from app.classes.technicians_info import TechniciansInfo
 from pydantic import BaseModel, field_validator
+import random
 
 class TechnicianProfile(BaseModel):
     name: str
@@ -58,6 +59,15 @@ class TechnicianManagement(TechniciansInfo):
     def upload_csv_file(self, file):
         df = parse_excel_or_csv(file)
         
+        generated_uids = set(df['uid'])
+        existing_uids = set(technicians_info.distinct('uid'))  # Assuming 'uid' is the field name in MongoDB
+        
+        new_uids = generated_uids.difference(existing_uids)
+        new_uids = new_uids.union({generate_unique_id() for _ in range(len(generated_uids) - len(new_uids))})
+        
+        id_mapping = dict(zip(generated_uids, new_uids))
+        df['uid'] = df['uid'].map(id_mapping)
+
         # Convert DataFrame to dictionary for MongoDB insertion
         data = df.to_dict(orient='records')
         # Insert data into MongoDB
