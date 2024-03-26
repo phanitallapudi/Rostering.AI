@@ -12,3 +12,4 @@ scikit-learn
 pandas
 pytest
 uvicorn
+openpyxl

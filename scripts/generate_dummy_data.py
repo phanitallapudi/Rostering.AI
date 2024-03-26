@@ -60,7 +60,7 @@ def generate_location():
 technicians = pd.DataFrame(columns=["uid", "name", "skill_set", "rating", "feedback_sentiment", "experience_years", "current_location", "day_schedule", "phoneno"])
 generated_uids = set()
 
-while len(technicians) < 100:
+while len(technicians) < 2:
     uid = random.randint(100000, 999999)  # Generate 6-digit random numbers
     if uid not in generated_uids:
         generated_uids.add(uid)
@@ -69,10 +69,12 @@ while len(technicians) < 100:
         rating = np.round(np.random.uniform(1, 5), 2)
         feedback_sentiment = np.random.choice(["positive", "neutral", "negative"])
         experience_years = np.random.randint(1, 11)
-        current_location = generate_location()
+        latitude, longitude = generate_location()
+        current_location = [latitude, longitude]
         day_schedule = np.random.choice(["free", "booked"])
         phoneno = generate_phone_number()
         
         technicians.loc[len(technicians)] = [uid, name, skill_set, rating, feedback_sentiment, experience_years, current_location, day_schedule, phoneno]
 
 technicians.to_csv('technicians_data.csv', index=False)
+technicians.to_excel('technicians_data.xlsx', index=False)

@@ -1,6 +1,7 @@
 from app.classes.dbconfig import user_data, technicians_info
 from utils.map_utils import get_random_location, get_cluster_id
-from utils.database_utils import generate_unique_id
+from utils.database_utils import generate_unique_id, parse_excel_or_csv
+from app.classes.technicians_info import TechniciansInfo
 from pydantic import BaseModel, field_validator
 
 class TechnicianProfile(BaseModel):
@@ -9,7 +10,7 @@ class TechnicianProfile(BaseModel):
     experience_years: int
     phoneno: str
 
-class TechnicianManagement:
+class TechnicianManagement(TechniciansInfo):
     def __init__(self) -> None:
         pass
 
@@ -53,3 +54,15 @@ class TechnicianManagement:
         if result:
             return {"message" : f"Created profile for {username} with profile name as {profile.name}"}
         return {"message" : f"Cannot able to create profile for {username}"}
+    
+    def upload_csv_file(self, file):
+        df = parse_excel_or_csv(file)
+        
+        # Convert DataFrame to dictionary for MongoDB insertion
+        data = df.to_dict(orient='records')
+        # Insert data into MongoDB
+        result = technicians_info.insert_many(data)
+        num_entries = len(result.inserted_ids)
+
+        self.update_cluster_id_technician()    
+        return {"message": f"File uploaded successfully. {num_entries} entries inserted into MongoDB"}
