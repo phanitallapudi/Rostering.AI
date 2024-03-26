@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query, HTTPException, Depends, Request, status
+from fastapi import APIRouter, Query, HTTPException, Depends, Request, status, File, UploadFile
 from app.classes.login import get_current_user, authorize_user, authorize_both_user, oauth2_scheme, User
 from fastapi.responses import JSONResponse
 from app.classes.technicians_info import TechniciansInfo
@@ -135,3 +135,10 @@ async def get_calculate_route(origin: str = Query(..., title="origin location", 
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
      response = calculate_route(origin, destination)
      return JSONResponse(content=response, status_code=200)
+
+@router.post("/upload_technician_files", dependencies=[Depends(authorize_user)])
+async def upload_technician_files_using_csv_xlsx(file: UploadFile = File(...), current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    if current_user.get('role') != "Admin":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    response = technicianManagementObj.upload_csv_file(file)
+    return JSONResponse(content=response, status_code=200)
