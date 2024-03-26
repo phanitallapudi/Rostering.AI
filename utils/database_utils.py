@@ -23,6 +23,8 @@ def parse_excel_or_csv(file):
     elif file.filename.endswith(('.xlsx', '.xls')):
         # If it's an Excel file, read it using pandas
         df = pd.read_excel(file.file)
+        if 'current_location' in df.columns:
+            df['current_location'] = df['current_location'].apply(eval)
     else:
         raise HTTPException(status_code=400, detail="Unsupported file format")
     return df

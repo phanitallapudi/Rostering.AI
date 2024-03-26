@@ -140,5 +140,7 @@ async def get_calculate_route(origin: str = Query(..., title="origin location", 
 async def upload_technician_files_using_csv_xlsx(file: UploadFile = File(...), current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
     if current_user.get('role') != "Admin":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    if not file.filename.endswith(('.xlsx', '.csv')):
+        raise HTTPException(status_code=400, detail="Invalid file format, please upload a csv or xlsx file to process")
     response = technicianManagementObj.upload_csv_file(file)
     return JSONResponse(content=response, status_code=200)

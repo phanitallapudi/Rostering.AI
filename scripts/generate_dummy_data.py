@@ -77,3 +77,4 @@ while len(technicians) < 2:
         technicians.loc[len(technicians)] = [uid, name, skill_set, rating, feedback_sentiment, experience_years, current_location, day_schedule, phoneno]
 
 technicians.to_csv('technicians_data.csv', index=False)
+technicians.to_excel('technicians_data.xlsx', index=False)

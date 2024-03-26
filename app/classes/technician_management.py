@@ -56,20 +56,13 @@ class TechnicianManagement(TechniciansInfo):
         return {"message" : f"Cannot able to create profile for {username}"}
     
     def upload_csv_file(self, file):
-        try:
-        # Parse the uploaded file
-            df = parse_excel_or_csv(file)
-            
-            # Convert DataFrame to dictionary for MongoDB insertion
-            data = df.to_dict(orient='records')
-            
-            # Insert data into MongoDB
-            result = technicians_info.insert_many(data)
-            num_entries = len(result.inserted_ids)
-
-            self.update_cluster_id_technician()
+        df = parse_excel_or_csv(file)
         
-            return {"message": f"File uploaded successfully. {num_entries} entries inserted into MongoDB"}
-        except Exception as e:
-            print(e)
-            return {"error": "Error uploading!!!"}
+        # Convert DataFrame to dictionary for MongoDB insertion
+        data = df.to_dict(orient='records')
+        # Insert data into MongoDB
+        result = technicians_info.insert_many(data)
+        num_entries = len(result.inserted_ids)
+
+        self.update_cluster_id_technician()    
+        return {"message": f"File uploaded successfully. {num_entries} entries inserted into MongoDB"}
