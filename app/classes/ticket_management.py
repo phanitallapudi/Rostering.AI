@@ -80,6 +80,7 @@ class TicketManagement(TechniciansInfo):
         # Perform the query
         ticket = tickets_data.find_one({"_id": _id})
         ticket["_id"] = str(ticket["_id"])
+        ticket['created_at'] = ticket['created_at'].strftime("%Y-%m-%d %H:%M:%S")
         user_id = ticket.get('assigned_to')
         if user_id:
             technician = technicians_info.find_one({"_id": user_id})
