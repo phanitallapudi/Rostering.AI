@@ -149,6 +149,34 @@ class DataVizualizer(TechniciansInfo):
         # Convert the plot to base64
         buf_base64 = base64.b64encode(buf.getvalue()).decode("utf-8")
 
+
+        # Convert 'created_at' column to datetime format
+        df['created_at'] = pd.to_datetime(df['created_at'])
+
+        # Group tasks by day and count the number of tasks created each day
+        tasks_created_per_day = df.groupby(df['created_at'].dt.date).size()
+
+        # Create a line chart
+        plt.figure(figsize=(10, 6))
+        tasks_created_per_day.plot(marker='o', color='blue', linestyle='-')
+        
+        # Set labels and title
+        plt.title('Tickets Created Over Time')
+        plt.xlabel('Date')
+        plt.ylabel('Number of Tickets Created')
+        plt.grid(True)
+        plt.tight_layout()
+
+        # Save the plot to a BytesIO object
+        buf = BytesIO()
+        plt.savefig(buf, format="png")
+        buf.seek(0)
+        plt.close()
+
+        # Convert the plot to base64
+        buf2_base64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+
         return {
-            "Count_Tasks_In_Each_Status": buf_base64
+            "Count_Tickets_In_Each_Status": buf_base64,
+            "Tickets_Created_Over_Time": buf2_base64
         }
