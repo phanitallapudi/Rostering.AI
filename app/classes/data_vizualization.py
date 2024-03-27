@@ -135,7 +135,7 @@ class DataVizualizer(TechniciansInfo):
         plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle
         
         # Add title at the center with a box around it
-        title_text = 'Task Status Distribution'
+        title_text = 'Ticket Status Distribution'
         plt.title(title_text, loc='center', bbox=dict(facecolor='lightgrey', alpha=0.5, edgecolor='black', boxstyle='round,pad=0.5'), pad=20)
 
         plt.tight_layout()
@@ -176,7 +176,41 @@ class DataVizualizer(TechniciansInfo):
         # Convert the plot to base64
         buf2_base64 = base64.b64encode(buf.getvalue()).decode("utf-8")
 
+        # Count the number of tasks for each priority
+        priority_counts = df['priority'].value_counts()
+
+        # Create figure and axes objects with adjusted size
+        fig, axs = plt.subplots(figsize=(4, 5))
+
+        # Define colors for each priority level
+        colors = ['green', 'yellow', 'red']
+
+        # Bar chart for priority distribution with specified colors
+        axs.bar(priority_counts.index, priority_counts.values, color=[colors[p-1] for p in priority_counts.index], alpha=0.7)
+
+        # Title and labels
+        axs.set_title('Ticket Priority Distribution', fontsize=14)
+        axs.set_xlabel('Priority', fontsize=12)
+        axs.set_ylabel('Number of Tickets', fontsize=12)
+
+        # Rotate x-axis labels for better readability
+        plt.xticks(rotation=45, ha='right', fontsize=10)
+        plt.yticks(fontsize=10)
+
+        # Increase padding between subplots
+        plt.tight_layout(pad=3)
+
+        # Save the plot to BytesIO object
+        buf = BytesIO()
+        plt.savefig(buf, format="png")
+        buf.seek(0)
+        plt.close()
+
+        # Convert the plots to base64
+        buf3_base64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+
         return [
             {"Count_Tickets_In_Each_Status": buf_base64},
-            {"Tickets_Created_Over_Time": buf2_base64}
+            {"Tickets_Created_Over_Time": buf2_base64},
+            {"Tickets_Priority_Distribution": buf3_base64}
         ]
