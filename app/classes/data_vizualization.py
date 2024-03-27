@@ -114,12 +114,12 @@ class DataVizualizer(TechniciansInfo):
         plt.close()
         buf4_base64 = base64.b64encode(buf4.getvalue()).decode("utf-8")
 
-        return {
-            "Average_Rating_by_Skill_Set": buf_base64,
-            "Feedback_Sentiment_Distribution": buf2_base64,
-            "Rating_vs_Experience_Years": buf3_base64,
-            "Experience_Distribution": buf4_base64
-        }
+        return [
+            {"Average_Rating_by_Skill_Set": buf_base64},
+            {"Feedback_Sentiment_Distribution": buf2_base64},
+            {"Rating_vs_Experience_Years": buf3_base64},
+            {"Experience_Distribution": buf4_base64}
+        ]
 
     def get_infographics_tickets(self):
         tickets_data = self.get_all_tickets()
@@ -176,7 +176,7 @@ class DataVizualizer(TechniciansInfo):
         # Convert the plot to base64
         buf2_base64 = base64.b64encode(buf.getvalue()).decode("utf-8")
 
-        return {
-            "Count_Tickets_In_Each_Status": buf_base64,
-            "Tickets_Created_Over_Time": buf2_base64
-        }
+        return [
+            {"Count_Tickets_In_Each_Status": buf_base64},
+            {"Tickets_Created_Over_Time": buf2_base64}
+        ]
