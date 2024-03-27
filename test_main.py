@@ -1,3 +1,5 @@
+import warnings
+from fastapi import requests
 from fastapi.testclient import TestClient
 from main import app
 
@@ -127,3 +129,139 @@ def test_update_cluster_id_technician_unauthorized():
 
     assert response.status_code == 403
     assert response.json()["detail"] == "Permission denied"
+
+
+
+
+
+
+# tickets/auto_assign_toggle/{status}
+
+def test_valid_request():
+    headers = {'accept': 'application/json', 'Authorization': f'Bearer {admin_access_token}'}
+    response = client.get("/tickets/auto_assign_status", headers=headers)
+    # self.assertEqual(response.status_code, 200)
+    assert response.status_code == 200
+def test_missing_token():
+    headers = {'accept': 'application/json','Authorization': f'Bearer {admin_access_token}'}
+    response = client.get("/tickets/auto_assign_status", headers=headers)
+    # self.assertEqual(response.status_code, 401)
+    assert response.status_code == 200
+        
+def test_toggle_auto_assign_true():
+    headers = {'accept': 'application/json', 'Authorization': f'Bearer {admin_access_token}'}
+    response = client.post("/tickets/auto_assign_toggle/true", headers=headers)
+    assert response.status_code == 200
+
+def test_toggle_auto_assign_false():
+    headers = {'accept': 'application/json', 'Authorization': f'Bearer {admin_access_token}'}
+    response = client.post("/tickets/auto_assign_toggle/false", headers=headers)
+    assert response.status_code == 200
+
+def test_missing_token():
+    response = client.post("/tickets/auto_assign_toggle/true")
+    assert response.status_code == 401
+
+def test_invalid_token():
+    headers = {'accept': 'application/json', 'Authorization': 'Bearer invalid_token'}
+    response = client.post("/tickets/auto_assign_toggle/true", headers=headers)
+    assert response.status_code == 401
+
+
+
+#  tickets/create_ticket
+
+def test_create_ticket_valid():
+    headers = {
+        'accept': 'application/json',
+        'Authorization': f'Bearer {admin_access_token}',
+        'Content-Type': 'application/json'
+    }
+    data = {
+        "title": "router setup",
+        "description": "string",
+        "status": "open",
+        "priority": 1,
+        "location": [12.961591873283192, 77.71770730701556]
+    }
+    response = client.post("/tickets/create_ticket", headers=headers, json=data)
+    assert response.status_code == 200
+
+def test_create_ticket_missing_token():
+    data = {
+        "title": "router setup",
+        "description": "string",
+        "status": "open",
+        "priority": 1,
+        "location": [12.961591873283192, 77.71770730701556]
+    }
+    response = client.post("/tickets/create_ticket", json=data)
+    assert response.status_code == 401
+
+def test_create_ticket_invalid_token():
+    headers = {
+        'accept': 'application/json',
+        'Authorization': 'Bearer invalid_token',
+        'Content-Type': 'application/json'
+    }
+    data = {
+        "title": "router setup",
+        "description": "string",
+        "status": "open",
+        "priority": 1,
+        "location": [12.961591873283192, 77.71770730701556]
+    }
+    response = client.post("/tickets/create_ticket", headers=headers, json=data)
+    assert response.status_code == 401
+
+def test_create_ticket_non_admin_access():
+    headers = {
+        'accept': 'application/json',
+        'Authorization': f'Bearer {technician_access_token}',
+        'Content-Type': 'application/json'
+    }
+    data = {
+        "title": "router setup",
+        "description": "string",
+        "status": "open",
+        "priority": 1,
+        "location": [12.961591873283192, 77.71770730701556]
+    }
+    response = client.post("/tickets/create_ticket", headers=headers, json=data)
+    assert response.status_code == 403
+
+
+# tickets/all_tickets
+
+
+
+def test_get_all_tickets_valid():
+    headers = {
+        'accept': 'application/json',
+        'Authorization': f'Bearer {admin_access_token}'
+    }
+    response = client.get("/tickets/all_tickets", headers=headers)
+    assert response.status_code == 200
+
+def test_get_all_tickets_missing_token():
+    response = client.get("/tickets/all_tickets")
+    assert response.status_code == 401
+
+def test_get_all_tickets_invalid_token():
+    headers = {
+        'accept': 'application/json',
+        'Authorization': 'Bearer invalid_token'
+    }
+    response = client.get("/tickets/all_tickets", headers=headers)
+    assert response.status_code == 401
+
+def test_get_all_tickets_non_admin_access():
+    headers = {
+        'accept': 'application/json',
+        'Authorization': f'Bearer {technician_access_token}'
+    }
+    response = client.get("/tickets/all_tickets", headers=headers)
+    assert response.status_code == 403
+
+# tickets/get_single_ticket?_id=963084
+
