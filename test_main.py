@@ -263,5 +263,31 @@ def test_get_all_tickets_non_admin_access():
     response = client.get("/tickets/all_tickets", headers=headers)
     assert response.status_code == 403
 
-# tickets/get_single_ticket?_id=963084
+def test_get_infographics_technicians_valid():
+    headers = {
+        'accept': 'application/json',
+        'Authorization': f'Bearer {admin_access_token}'
+    }
+    response = client.get("/infographics/get_infographics_technicians", headers=headers)
+    assert response.status_code == 200
+    assert response.json() is not None
 
+def test_get_infographics_technicians_missing_token():
+    response = client.get("/infographics/get_infographics_technicians")
+    assert response.status_code == 401
+
+def test_get_infographics_technicians_invalid_token():
+    headers = {
+        'accept': 'application/json',
+        'Authorization': f'Bearer admin_access_token'
+    }
+    response = client.get("/infographics/get_infographics_technicians", headers=headers)
+    assert response.status_code == 401
+
+def test_get_infographics_technicians_non_admin_access():
+    headers = {
+        'accept': 'application/json',
+        'Authorization': f'Bearer {technician_access_token}'
+    }
+    response = client.get("/infographics/get_infographics_technicians", headers=headers)
+    assert response.status_code == 403

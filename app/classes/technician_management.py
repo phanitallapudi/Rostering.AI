@@ -1,5 +1,5 @@
 from app.classes.dbconfig import user_data, technicians_info
-from utils.map_utils import get_random_location, get_cluster_id
+from utils.map_utils import get_address, get_random_location, get_cluster_id
 from utils.database_utils import generate_unique_id, parse_excel_or_csv
 from app.classes.technicians_info import TechniciansInfo
 from pydantic import BaseModel, field_validator
@@ -31,12 +31,14 @@ class TechnicianManagement(TechniciansInfo):
             return {"message" : f"profile for {username} already exists, please update it."}
         formatted_phoneno = self.format_phone_number(profile.phoneno)
 
-        location = get_random_location()
+        location = get_random_location() #needs to get it from the user
 
         while True:
             uid = generate_unique_id()
             if not technicians_info.find_one({"uid": uid}):
                 break
+
+        address = get_address(location[0], location[1])
         
         profile_data = {
             "uid" : uid,
@@ -46,6 +48,7 @@ class TechnicianManagement(TechniciansInfo):
             "feedback_sentiment": "neutral",
             "experience_years": profile.experience_years,
             "current_location": location,
+            "address": address,
             "day_schedule": "free",
             "phoneno": formatted_phoneno,
             "user" : user["_id"],
