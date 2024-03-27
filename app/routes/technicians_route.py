@@ -92,6 +92,21 @@ async def updates_the_cluster_id_of_technician(current_user: User = Depends(get_
     response = technicianinfoObj.update_cluster_id_technician()
     return JSONResponse(content=response, status_code=200)
 
+@router.get("/update_address_technician", dependencies=[Depends(authorize_user)])
+async def updates_the_address_of_technician(current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    """
+    Updates the address of a technician.
+
+    This endpoint allows an admin user to update the address of a technician. Authentication is required via OAuth2 token, and only users with the "Admin" role are allowed to access this endpoint. Upon successful authorization, the endpoint updates the address of the technician in the system and returns a JSON response with a status code of 200.
+
+    **Returns:**
+    - `dict`: A dictionary confirming the successful update of the technician's address.
+    """
+    if current_user.get('role') != "Admin":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    response = technicianinfoObj.update_technician_address()
+    return JSONResponse(content=response, status_code=200)
+
 @router.post("/create_profile")
 async def create_profile_for_technician(profile: TechnicianProfile, current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
     """
@@ -138,6 +153,17 @@ async def get_calculate_route(origin: str = Query(..., title="origin location", 
 
 @router.post("/upload_technician_files", dependencies=[Depends(authorize_user)])
 async def upload_technician_files_using_csv_xlsx(file: UploadFile = File(...), current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    """
+    Uploads technician files using CSV or XLSX format.
+
+    This endpoint allows an admin user to upload technician files in CSV or XLSX format. Authentication is required via OAuth2 token, and only users with the "Admin" role are allowed to access this endpoint. Upon successful authorization, the endpoint validates the uploaded file format and processes the file accordingly using the technician management system. It returns a JSON response with a status code of 200 upon successful file upload and processing.
+
+    **Request Body:**
+    - `file` (UploadFile): The CSV or XLSX file to be uploaded.
+
+    **Returns:**
+    - `dict`: A dictionary containing information about the file upload process.
+    """
     if current_user.get('role') != "Admin":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     if not file.filename.endswith(('.xlsx', '.csv')):

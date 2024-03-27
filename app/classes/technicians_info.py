@@ -135,3 +135,18 @@ class TechniciansInfo:
             if response.modified_count > 0:
                 updated_count += 1
         return {"response": f"{updated_count} documents updated."}
+    
+    def update_technician_address(self):
+        address_column = "address"
+        updated_count = 0
+        for entry in technicians_info.find({address_column: {"$exists": False}}):
+            location = entry["current_location"]
+            updated_address = get_address(location[0], location[1])  
+            response = technicians_info.update_one(
+                {"_id": entry["_id"]}, 
+                {"$set": {address_column: updated_address}},
+                upsert=False 
+            )
+            if response.modified_count > 0:
+                updated_count += 1
+        return {"response": f"{updated_count} documents updated."}
