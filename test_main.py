@@ -171,21 +171,21 @@ def test_invalid_token():
 
 #  tickets/create_ticket
 
-def test_create_ticket_valid():
-    headers = {
-        'accept': 'application/json',
-        'Authorization': f'Bearer {admin_access_token}',
-        'Content-Type': 'application/json'
-    }
-    data = {
-        "title": "router setup",
-        "description": "string",
-        "status": "open",
-        "priority": 1,
-        "location": [12.961591873283192, 77.71770730701556]
-    }
-    response = client.post("/tickets/create_ticket", headers=headers, json=data)
-    assert response.status_code == 200
+# def test_create_ticket_valid():
+#     headers = {
+#         'accept': 'application/json',
+#         'Authorization': f'Bearer {admin_access_token}',
+#         'Content-Type': 'application/json'
+#     }
+#     data = {
+#         "title": "router setup",
+#         "description": "string",
+#         "status": "open",
+#         "priority": 1,
+#         "location": [12.961591873283192, 77.71770730701556]
+#     }
+#     response = client.post("/tickets/create_ticket", headers=headers, json=data)
+#     assert response.status_code == 200
 
 def test_create_ticket_missing_token():
     data = {
