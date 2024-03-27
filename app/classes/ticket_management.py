@@ -3,7 +3,10 @@ from utils.map_utils import get_random_location, get_cluster_id
 from utils.database_utils import generate_unique_id
 from app.classes.technicians_info import TechniciansInfo
 from pydantic import BaseModel, field_validator
+from datetime import datetime, timedelta
 from bson import ObjectId
+
+import pytz
 
 class Ticket(BaseModel):
     title: str
@@ -21,7 +24,7 @@ class Ticket(BaseModel):
 
 class TicketManagement(TechniciansInfo):
     def __init__(self) -> None:
-        pass
+        self.IST = pytz.timezone('Asia/Kolkata')
 
     def create_ticket(self, ticket: Ticket, auto_assign):
         def generate_unique_ticket_id():
@@ -31,6 +34,8 @@ class TicketManagement(TechniciansInfo):
                     return uid
 
         coordinates = ticket.location
+        current_time = datetime.now(self.IST)
+
         ticket_information = {
             "uid": generate_unique_ticket_id(),
             "title": ticket.title,
@@ -38,7 +43,8 @@ class TicketManagement(TechniciansInfo):
             "status": ticket.status,
             "priority": ticket.priority,
             "assigned_to": None,
-            "location": ticket.location
+            "location": ticket.location,
+            "created_at": current_time
         }
 
         if auto_assign:
@@ -66,6 +72,7 @@ class TicketManagement(TechniciansInfo):
             user_id = ticket.get('assigned_to')
             if user_id:
                 ticket['assigned_to'] = str(user_id)
+            ticket['created_at'] = ticket['created_at'].strftime("%Y-%m-%d %H:%M:%S")
         return tickets
     
     def get_single_ticket(self, _id):
@@ -105,15 +112,22 @@ class TicketManagement(TechniciansInfo):
     
     def get_status_all_ticket(self):
         pipeline = [
-        {"$group": {"_id": "$status", "count": {"$sum": 1}}},
-        {"$project": {"status": "$_id", "count": 1, "_id": 0}}
+            {"$group": {"_id": "$status", "count": {"$sum": 1}}},
+            {"$project": {"status": "$_id", "count": 1, "_id": 0}}
         ]
+
+        ist = pytz.timezone('Asia/Kolkata')
+        twenty_four_hours_ago = datetime.now(ist) - timedelta(hours=24)
+
+        new_tickets_query = {"created_at": {"$gte": twenty_four_hours_ago}}
+        new_tickets = list(tickets_data.find(new_tickets_query))
 
         ticket_counts = list(tickets_data.aggregate(pipeline))
 
         json_response = {}
         for ticket_count in ticket_counts:
             json_response[ticket_count["status"]] = ticket_count["count"]
+        json_response["new_tickets_24hrs"] = len(new_tickets)
 
         return json_response
 
