@@ -131,13 +131,13 @@ class DataVizualizer(TechniciansInfo):
 
         # Create a pie chart
         plt.figure(figsize=(8, 8))
-        plt.pie(status_counts, labels=status_counts.index, autopct='%1.1f%%', colors=['lightcoral', 'lightskyblue', 'lightgreen'])
+        plt.pie(status_counts, labels=status_counts.index, autopct='%1.1f%%', colors=['lightcoral', 'lightskyblue', 'lightgreen'], labeldistance=1.1, textprops={'fontsize': 14})
         plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle
         
         # Add title at the center with a box around it
-        title_text = 'Task Status Distribution'
-        plt.title(title_text, loc='center', bbox=dict(facecolor='lightgrey', alpha=0.5, edgecolor='black', boxstyle='round,pad=0.5'), pad=20)
-
+        title_text = 'Ticket Status Distribution'
+        #plt.title(title_text, loc='center', bbox=dict(facecolor='lightgrey', alpha=0.5, edgecolor='black', boxstyle='round,pad=0.5'), pad=20)
+        plt.text(0, 0, title_text, ha='center', bbox=dict(facecolor='lightgrey', alpha=0.85, edgecolor='black', boxstyle='round,pad=0.5'), fontsize=16)
         plt.tight_layout()
 
         # Save the plot to a BytesIO object
@@ -176,7 +176,41 @@ class DataVizualizer(TechniciansInfo):
         # Convert the plot to base64
         buf2_base64 = base64.b64encode(buf.getvalue()).decode("utf-8")
 
+        # Count the number of tasks for each priority
+        priority_counts = df['priority'].value_counts()
+
+        # Create figure and axes objects with adjusted size
+        fig, axs = plt.subplots(figsize=(4, 5))
+
+        # Define colors for each priority level
+        colors = ['green', 'yellow', 'red']
+
+        # Bar chart for priority distribution with specified colors
+        axs.bar(priority_counts.index, priority_counts.values, color=[colors[p-1] for p in priority_counts.index], alpha=0.7)
+
+        # Title and labels
+        axs.set_title('Ticket Priority Distribution', fontsize=14)
+        axs.set_xlabel('Priority', fontsize=12)
+        axs.set_ylabel('Number of Tickets', fontsize=12)
+
+        # Rotate x-axis labels for better readability
+        plt.xticks(ha='right', fontsize=10)
+        plt.yticks(fontsize=10)
+
+        # Increase padding between subplots
+        plt.tight_layout(pad=3)
+
+        # Save the plot to BytesIO object
+        buf = BytesIO()
+        plt.savefig(buf, format="png")
+        buf.seek(0)
+        plt.close()
+
+        # Convert the plots to base64
+        buf3_base64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+
         return [
             {"Count_Tickets_In_Each_Status": buf_base64},
-            {"Tickets_Created_Over_Time": buf2_base64}
+            {"Tickets_Created_Over_Time": buf2_base64},
+            {"Tickets_Priority_Distribution": buf3_base64}
         ]
