@@ -104,10 +104,10 @@ class TechniciansInfo:
             person, distance, weightage_score , schedule = sorted_distances[i]
             top_persons.append(person)
 
-        for person in top_persons:
-            lat, long = person["current_location"]
-            location_details = get_address(latitude=lat, longitude=long)
-            person["location_details"] = location_details
+        # for person in top_persons:
+        #     lat, long = person["current_location"]
+        #     location_details = get_address(latitude=lat, longitude=long)
+        #     person["location_details"] = location_details
 
         return top_persons
       
