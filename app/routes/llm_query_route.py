@@ -6,7 +6,7 @@ from app.classes.llm_assist import LLMAssistance
 router = APIRouter()
 llmAssistanceObj = LLMAssistance()
 
-@router.get('/query')
+@router.get('/query', dependencies=[Depends(authorize_user)])
 async def ask_queries_returns_appropriate_technician_details(query: str = Query(..., title="query", description="Enter the query"),
                       lat: float = Query(..., title="latitude", description="Enter the latitude"),
                       long: float = Query(..., title="longitude", description="Enter the longitude"),
@@ -28,4 +28,14 @@ async def ask_queries_returns_appropriate_technician_details(query: str = Query(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     response = llmAssistanceObj.get_technician_using_llm(question=query, user_lat=lat, user_lon=long)
     return JSONResponse(content=response, status_code=200)
+
+@router.get("/ticket_query", dependencies=[Depends(authorize_user)])
+async def query_ticket_information_using_llm(query: str = Query(..., title="query", description="Enter the query"), 
+                                             ticket_id: str = Query(..., title="ticket id", description="Enter the _id of the ticket"),
+                                             current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    if current_user.get('role') not in ["Admin", "Technician"]:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    response = llmAssistanceObj.get_information_using_details(query=query, ticket_id=ticket_id)
+    return JSONResponse(content=response, status_code=200)
+
 

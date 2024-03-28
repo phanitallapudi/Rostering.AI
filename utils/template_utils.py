@@ -10,3 +10,13 @@ You just need to return the service name and nothing else needed, for example if
 
 customer services
 """
+
+ticket_query_prompt = """You need to analye the ticket information which is given below and return the response for the query
+here is the ticket information : {ticket_details}
+here is the path details : {path}
+here are the other possible matches for technicians : {other_technicians}
+
+here is the customer query : {query}
+
+Now take a deep breathe and generate the appropriate response for the query.
+"""
