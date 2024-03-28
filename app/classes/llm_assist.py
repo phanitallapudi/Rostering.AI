@@ -1,4 +1,5 @@
 from langchain.chains import LLMChain
+from langchain.memory import ConversationBufferMemory
 from langchain_core.prompts import PromptTemplate
 from utils.template_utils import llm_assistance_prompt, ticket_query_prompt
 from app.classes.base_llm_class import BaseLLMRequirements
@@ -11,7 +12,7 @@ import json
 
 class LLMAssistance(BaseLLMRequirements, TicketManagement):
     def __init__(self) -> None:
-        pass
+        self.memory = ConversationBufferMemory(memory_key="chat_history")
 
     def get_prompt(self):
         return PromptTemplate(
@@ -20,7 +21,7 @@ class LLMAssistance(BaseLLMRequirements, TicketManagement):
     
     def get_prompt_ticket_query(self):
         return PromptTemplate(
-            input_variables=["ticket_details", "path", "other_technicians", "query"], template=ticket_query_prompt
+            input_variables=["query"], template=ticket_query_prompt
         )
 
     def get_technician_using_llm(self, question, user_lat, user_lon):
@@ -61,11 +62,19 @@ class LLMAssistance(BaseLLMRequirements, TicketManagement):
         
         llm_chain = LLMChain(
             llm=self.get_llm(),
-            prompt=self.get_prompt_ticket_query()
+            prompt=self.get_prompt_ticket_query(),
+            verbose=True,
+            memory=self.memory 
         )
+    
+        # Ensure inputs are correctly formatted for the LLMChain
+        data_to_be_sent = f"ticket_details : {ticket_details}\npath : {summary}\nother_technicians : {technicians_list}\nquery : {query}"
+        inputs = {
+            "query": data_to_be_sent
+        }
         
-        llm_response = llm_chain({"ticket_details": ticket_details, "path": summary, "other_technicians": technicians_list, "query": query})
+        # Pass inputs to the LLMChain
+        llm_response = llm_chain(inputs)
         return llm_response
-
 
 
