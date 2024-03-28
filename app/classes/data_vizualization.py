@@ -131,13 +131,13 @@ class DataVizualizer(TechniciansInfo):
 
         # Create a pie chart
         plt.figure(figsize=(8, 8))
-        plt.pie(status_counts, labels=status_counts.index, autopct='%1.1f%%', colors=['lightcoral', 'lightskyblue', 'lightgreen'])
+        plt.pie(status_counts, labels=status_counts.index, autopct='%1.1f%%', colors=['lightcoral', 'lightskyblue', 'lightgreen'], labeldistance=1.1, textprops={'fontsize': 14})
         plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle
         
         # Add title at the center with a box around it
         title_text = 'Ticket Status Distribution'
-        plt.title(title_text, loc='center', bbox=dict(facecolor='lightgrey', alpha=0.5, edgecolor='black', boxstyle='round,pad=0.5'), pad=20)
-
+        #plt.title(title_text, loc='center', bbox=dict(facecolor='lightgrey', alpha=0.5, edgecolor='black', boxstyle='round,pad=0.5'), pad=20)
+        plt.text(0, 0, title_text, ha='center', bbox=dict(facecolor='lightgrey', alpha=0.85, edgecolor='black', boxstyle='round,pad=0.5'), fontsize=16)
         plt.tight_layout()
 
         # Save the plot to a BytesIO object
@@ -194,7 +194,7 @@ class DataVizualizer(TechniciansInfo):
         axs.set_ylabel('Number of Tickets', fontsize=12)
 
         # Rotate x-axis labels for better readability
-        plt.xticks(rotation=45, ha='right', fontsize=10)
+        plt.xticks(ha='right', fontsize=10)
         plt.yticks(fontsize=10)
 
         # Increase padding between subplots

@@ -119,16 +119,19 @@ class TicketManagement(TechniciansInfo):
 
         ist = pytz.timezone('Asia/Kolkata')
         twenty_four_hours_ago = datetime.now(ist) - timedelta(hours=24)
+        one_month_ago = datetime.now(ist) - timedelta(hours=720)
 
-        new_tickets_query = {"created_at": {"$gte": twenty_four_hours_ago}}
-        new_tickets = list(tickets_data.find(new_tickets_query))
+        twenty_four_tickets_query = {"created_at": {"$gte": twenty_four_hours_ago}}
+        one_month_tickets_query = {"created_at": {"$gte": one_month_ago}}
 
         ticket_counts = list(tickets_data.aggregate(pipeline))
 
-        json_response = {}
-        for ticket_count in ticket_counts:
-            json_response[ticket_count["status"]] = ticket_count["count"]
-        json_response["new_tickets_24hrs"] = len(new_tickets)
+        twenty_four_new_tickets_count = tickets_data.count_documents(twenty_four_tickets_query)
+        one_month_new_tickets_count = tickets_data.count_documents(one_month_tickets_query)
+
+        json_response = {ticket_count["status"]: ticket_count["count"] for ticket_count in ticket_counts}
+        json_response["new_tickets_1day"] = twenty_four_new_tickets_count
+        json_response["new_tickets_1month"] = one_month_new_tickets_count
 
         return json_response
 
