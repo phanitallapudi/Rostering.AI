@@ -38,7 +38,7 @@ class TechniciansInfo:
         return technicians
     
     def get_top5_technicians(self):
-        skill_sets = ["router setup", "cable repair", "software troubleshooting", "fiber optics", "customer service"]
+        skill_sets = technicians_info.distinct("skill_set")
         top_technicians = {}
 
         for skill in skill_sets:
