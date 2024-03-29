@@ -28,7 +28,7 @@ class DataVizualizer(TechniciansInfo):
 
         df = pd.DataFrame(all_technicians)
 
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(8, 8))
         df.groupby('skill_set')['rating'].mean().plot(kind='bar', color='skyblue')
         plt.title('Average Rating by Skill Set')
         plt.xlabel('Skill Set')

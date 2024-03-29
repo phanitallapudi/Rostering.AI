@@ -2,7 +2,7 @@ from app.classes.dbconfig import user_data, technicians_info
 from utils.map_utils import get_address, get_random_location, get_cluster_id
 from utils.database_utils import generate_unique_id, parse_excel_or_csv
 from app.classes.technicians_info import TechniciansInfo
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, EmailStr
 import random
 
 class TechnicianProfile(BaseModel):
@@ -10,6 +10,14 @@ class TechnicianProfile(BaseModel):
     skill_set: str
     experience_years: int
     phoneno: str
+    email: str
+
+    @field_validator('skill_set')
+    def validate_title(cls, v):
+        allowed_titles = ["router setup", "cable repair", "software troubleshooting", "fiber optics", "customer service"]
+        if v not in allowed_titles:
+            raise ValueError(f"Title must be one of: {', '.join(allowed_titles)}")
+        return v
 
 class TechnicianManagement(TechniciansInfo):
     def __init__(self) -> None:
@@ -52,7 +60,8 @@ class TechnicianManagement(TechniciansInfo):
             "day_schedule": "free",
             "phoneno": formatted_phoneno,
             "user" : user["_id"],
-            "cluster_id" : int(get_cluster_id(location))
+            "cluster_id" : int(get_cluster_id(location)),
+            "email" : profile.email
         }
         result = technicians_info.insert_one(profile_data)
         if result:

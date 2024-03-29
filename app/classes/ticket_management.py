@@ -1,6 +1,7 @@
 from app.classes.dbconfig import user_data, tickets_data, technicians_info
 from utils.map_utils import get_random_location, get_cluster_id
 from utils.database_utils import generate_unique_id
+from utils.communication_utils import send_mail, generate_confirmation_email, generate_cancellation_email
 from app.classes.technicians_info import TechniciansInfo
 from pydantic import BaseModel, field_validator
 from datetime import datetime, timedelta
@@ -58,6 +59,11 @@ class TicketManagement(TechniciansInfo):
             technician_id = ObjectId(top_technician["_id"])
             ticket_information["assigned_to"] = technician_id
             ticket_information["status"] = "assigned"
+            technician = technicians_info.find_one({"_id" : technician_id})
+            
+            email_to, email_subject, email_body = generate_confirmation_email(ticket_information, technician)
+            send_mail(to=email_to, subject=email_subject, body=email_body)
+
             technicians_info.update_one({"_id": technician_id}, {"$set": {"day_schedule": "booked"}})
 
         result = tickets_data.insert_one(ticket_information)
@@ -85,6 +91,8 @@ class TicketManagement(TechniciansInfo):
         if user_id:
             technician = technicians_info.find_one({"_id": user_id})
             technician["_id"] = str(technician["_id"])
+            if "user" in technician:
+                technician["user"] = str(technician["user"])
             ticket['assigned_to'] = technician
         return ticket
 
@@ -103,8 +111,13 @@ class TicketManagement(TechniciansInfo):
             return {"message": f"Technician with {technician_id} is not available"}
 
         if assigned_to:
-            assigned_technician = technicians_info.find_one({"_id": ObjectId(assigned_to)})
+            previous_assigned_technician = technicians_info.find_one({"_id": ObjectId(assigned_to)})
+            p_email_to, p_email_subject, p_email_body = generate_cancellation_email(ticket, previous_assigned_technician)
+            send_mail(to=p_email_to, subject=p_email_subject, body=p_email_body)
             technicians_info.update_one({"_id": ObjectId(assigned_to)}, {"$set": {"day_schedule": "free"}})
+
+        email_to, email_subject, email_body = generate_confirmation_email(ticket, assigned_technician)
+        send_mail(to=email_to, subject=email_subject, body=email_body)
 
         tickets_data.update_one({"_id" : ObjectId(ticket_id)}, {"$set": {"assigned_to": ObjectId(technician_id), "status": "assigned"}})
         technicians_info.update_one({"_id": ObjectId(technician_id)}, {"$set": {"day_schedule": "booked"}})
