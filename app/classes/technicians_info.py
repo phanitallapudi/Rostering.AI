@@ -2,6 +2,7 @@ from bson import ObjectId
 from app.classes.dbconfig import technicians_info
 from utils.map_utils import get_address, get_cluster_id
 from math import radians, sin, cos, sqrt, atan2
+from heapq import nlargest
 
 class TechniciansInfo:
     def __init__(self) -> None:
@@ -35,6 +36,17 @@ class TechniciansInfo:
             if user_id:
                 technician['user'] = str(user_id)
         return technicians
+    
+    def get_top5_technicians(self):
+        skill_sets = ["router setup", "cable repair", "software troubleshooting", "fiber optics", "customer service"]
+        top_technicians = {}
+
+        for skill in skill_sets:
+            technicians = technicians_info.find({"skill_set": skill})
+            top_5 = nlargest(5, technicians, key=lambda x: (x['rating'], 1 if x['feedback_sentiment'] == 'positive' else 0))
+            top_technicians[skill] = [technician['name'] for technician in top_5]
+
+        return top_technicians
     
     def calculate_distance(self, lat1, lon1, lat2, lon2):
         """

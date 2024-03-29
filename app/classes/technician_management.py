@@ -11,6 +11,7 @@ class TechnicianProfile(BaseModel):
     experience_years: int
     phoneno: str
     email: str
+    location: list[float] = get_random_location()
 
     @field_validator('skill_set')
     def validate_title(cls, v):
@@ -39,7 +40,7 @@ class TechnicianManagement(TechniciansInfo):
             return {"message" : f"profile for {username} already exists, please update it."}
         formatted_phoneno = self.format_phone_number(profile.phoneno)
 
-        location = get_random_location() #needs to get it from the user
+        location = profile.location #needs to get it from the user
 
         while True:
             uid = generate_unique_id()
