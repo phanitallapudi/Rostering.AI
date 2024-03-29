@@ -130,7 +130,7 @@ async def create_profile_for_technician(profile: TechnicianProfile, current_user
     response = technicianManagementObj.create_profile(username=username, profile=profile)
     return JSONResponse(content=response, status_code=200)
 
-@router.get("/calculate-route", dependencies=[Depends(authorize_both_user)])
+@router.get("/calculate_route", dependencies=[Depends(authorize_both_user)])
 async def get_calculate_route(origin: str = Query(..., title="origin location", description="Enter the latitude"),
                               destination: str = Query(..., title="destination location", description="Enter the latitude"),
                               current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):

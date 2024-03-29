@@ -37,7 +37,9 @@ def calculate_route(origin: str, destination: str) -> dict:
     origin = truncate_coordinates(origin)
     destination = truncate_coordinates(destination)
     
-    url = f"https://api.tomtom.com/routing/1/calculateRoute/{origin}:{destination}/json?sectionType=traffic&routeType=fastest&traffic=true&travelMode=motorcycle&key={tom_tom_api_key}"
+    # url = f"https://api.tomtom.com/routing/1/calculateRoute/{origin}:{destination}/json?sectionType=traffic&routeType=fastest&traffic=true&travelMode=motorcycle&key={tom_tom_api_key}"
+
+    url = f"https://api.tomtom.com/routing/1/calculateRoute/{origin}:{destination}/json?computeTravelTimeFor=all&sectionType=traffic&report=effectiveSettings&routeType=fastest&traffic=true&travelMode=motorcycle&vehicleMaxSpeed=80&vehicleCommercial=false&vehicleEngineType=combustion&constantSpeedConsumptionInLitersPerHundredkm=40%2C3&currentFuelInLiters=5&key={tom_tom_api_key}"
     
     response = requests.get(url)
     

@@ -14,5 +14,5 @@ customer services
 ticket_query_prompt = """You need to analye the ticket information which is given below and return the response for the query
 Here is the nessesary details which you want to process : {query}
 
-Now take a deep breathe and generate the appropriate response for the query.
+Now take a deep breathe and generate the appropriate response for the query, make the response brief and to the point.
 """
