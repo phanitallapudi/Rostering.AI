@@ -140,7 +140,8 @@ class TechniciansInfo:
     def update_cluster_id_technician(self):
         cluster_column = "cluster_id"
         updated_count = 0
-        for entry in technicians_info.find({cluster_column: {"$exists": False}}):  # Only get entries without the new column
+        #for entry in technicians_info.find({cluster_column: {"$exists": False}}):
+        for entry in technicians_info.find():  # Only get entries without the new column
             location = entry["current_location"]
             retrieved_cluster_id = get_cluster_id(location)
             response = technicians_info.update_one({"_id": entry["_id"]}, {"$set": {cluster_column: int(retrieved_cluster_id)}})

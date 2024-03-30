@@ -38,6 +38,7 @@ def generate_confirmation_email(ticket_information, technician):
     retrived_email = technician.get("email")
     if retrived_email is not None:
         email_to.append(retrived_email)
+    location_string = f"{ticket_information['location'][0]},{ticket_information['location'][1]}"
     email_to.append("rostering99@gmail.com")
     email_subject = f"Task Assigned: {ticket_information['title']}"
     email_body = f"""
@@ -94,7 +95,8 @@ def generate_confirmation_email(ticket_information, technician):
                 <li><strong>Task:</strong> {ticket_information['title']}</li>
                 <li><strong>Task Description:</strong> {ticket_information['description']}</li>
                 <li><strong>Priority:</strong> {ticket_information['priority']}</li>
-                <li><strong>Location:</strong> {ticket_information['location']}</li>
+                <li><strong>Coordinates:</strong> {ticket_information['location']}</li>
+                <li><strong>Location Map:</strong> <a href="https://www.google.com/maps/place/{location_string}">View on Google Maps</a></li>
                 <li><strong>Created At:</strong> {ticket_information['created_at']}</li>
                 <li><strong>Task UID:</strong> {ticket_information['uid']}</li>
             </ul>
@@ -104,7 +106,7 @@ def generate_confirmation_email(ticket_information, technician):
             <p><i>This email was generated automatically. Please do not reply.</i></p>
         </div>
         <div class="footer">
-            <p>If you have any questions, please contact us at [Your Contact Information].</p>
+            <p>If you have any questions, please contact us at rostering99@gmail.com</p>
         </div>
     </body>
     </html>
@@ -118,6 +120,7 @@ def generate_cancellation_email(ticket_information, technician):
     retrieved_email = technician.get("email")
     if retrieved_email is not None:
         email_to.append(retrieved_email)
+    location_string = f"{ticket_information['location'][0]},{ticket_information['location'][1]}"
     email_to.append("rostering99@gmail.com")
     email_subject = f"Task Cancelled: {ticket_information['title']}"
     email_body = f"""
@@ -174,7 +177,8 @@ def generate_cancellation_email(ticket_information, technician):
                 <li><strong>Task:</strong> {ticket_information['title']}</li>
                 <li><strong>Task Description:</strong> {ticket_information['description']}</li>
                 <li><strong>Priority:</strong> {ticket_information['priority']}</li>
-                <li><strong>Location:</strong> {ticket_information['location']}</li>
+                <li><strong>Coordinates:</strong> {ticket_information['location']}</li>
+                <li><strong>Location Map:</strong> <a href="https://www.google.com/maps/place/{location_string}">View on Google Maps</a></li>
                 <li><strong>Created At:</strong> {ticket_information['created_at']}</li>
                 <li><strong>Task UID:</strong> {ticket_information['uid']}</li>
             </ul>
@@ -183,7 +187,7 @@ def generate_cancellation_email(ticket_information, technician):
             <p><i>This email was generated automatically. Please do not reply.</i></p>
         </div>
         <div class="footer">
-            <p>If you have any questions, please contact us at rostering99@gmail.com.</p>
+            <p>If you have any questions, please contact us at rostering99@gmail.com</p>
         </div>
     </body>
     </html>
