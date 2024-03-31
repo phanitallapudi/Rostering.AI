@@ -6,6 +6,7 @@ from app.routes.llm_query_route import router as llm_query_route
 from app.routes.login_route import router as login_route
 from app.routes.tickets_route import router as tickets_route
 from app.routes.infographics_route import router as infographics_route
+from app.routes.activity_route import router as activity_route
 
 app = FastAPI(
     title="Rostering.AI",
@@ -25,6 +26,7 @@ app.include_router(llm_query_route, prefix="/llm", tags=["LLM"])
 app.include_router(login_route, tags=["Authenticate"])
 app.include_router(tickets_route, prefix="/tickets", tags=["Tickets"])
 app.include_router(infographics_route, prefix="/infographics", tags=["Infographics"])
+app.include_router(activity_route, prefix="/activity", tags=["Activity"])
 
 @app.get("/")
 async def root():

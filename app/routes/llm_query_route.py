@@ -33,6 +33,19 @@ async def ask_queries_returns_appropriate_technician_details(query: str = Query(
 async def query_ticket_information_using_llm(query: str = Query(..., title="query", description="Enter the query"), 
                                              ticket_id: str = Query(..., title="ticket id", description="Enter the _id of the ticket"),
                                              current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    """
+    Queries ticket information using LLMs.
+
+    This endpoint allows both admin and technician users to query ticket information using LLMs. Authentication is required via OAuth2 token, and users with either the "Admin" or "Technician" role are allowed to access this endpoint. Upon successful authorization, the endpoint retrieves ticket details and calculates route information if a technician is assigned to the ticket. It then queries LLMs with the ticket details, route information, and other technicians' list to provide relevant information related to the query. The response is returned as a JSON response with a status code of 200.
+
+    **Query Parameters:**
+    - `query` (str): The query to be processed.
+    - `ticket_id` (str): The ID of the ticket for which information is queried.
+
+    **Returns:**
+    - `dict`: A dictionary containing information related to the query.
+
+    """
     if current_user.get('role') not in ["Admin", "Technician"]:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     response = llmAssistanceObj.get_information_using_details(query=query, ticket_id=ticket_id)

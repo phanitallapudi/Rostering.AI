@@ -27,6 +27,21 @@ async def get_all_technicians(current_user: User = Depends(get_current_user), to
     response = technicianinfoObj.get_all_technicians()
     return JSONResponse(content=response, status_code=200)
 
+@router.get("/top_technicians", dependencies=[Depends(authorize_user)])
+async def get_top_5_technicians(current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    """
+    Retrieves the top 5 technicians.
+
+    This endpoint allows an admin user to retrieve information about the top 5 technicians based on certain criteria. Authentication is required via OAuth2 token, and only users with the "Admin" role are allowed to access this endpoint. Upon successful authorization, the endpoint fetches information about the top 5 technicians from the technician information manager and returns it as a JSON response with a status code of 200.
+
+    **Returns:**
+    - `dict`: A dictionary containing information about the top 5 technicians.
+    """
+    if current_user.get('role') != "Admin":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    response = technicianinfoObj.get_top5_technicians()
+    return JSONResponse(content=response, status_code=200)
+
 @router.get("/nearest_technician", dependencies=[Depends(authorize_both_user)])
 async def get_nearest_technician(lat: float = Query(..., title="latitude", description="Enter the latitude"),
                                   long: float = Query(..., title="longitude", description="Enter the longitude"), 
@@ -168,5 +183,6 @@ async def upload_technician_files_using_csv_xlsx(file: UploadFile = File(...), c
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     if not file.filename.endswith(('.xlsx', '.csv')):
         raise HTTPException(status_code=400, detail="Invalid file format, please upload a csv or xlsx file to process")
-    response = technicianManagementObj.upload_csv_file(file)
+    username = current_user.get('sub')
+    response = technicianManagementObj.upload_csv_file(file, username)
     return JSONResponse(content=response, status_code=200)

@@ -1,19 +1,31 @@
-from app.classes.dbconfig import user_data, technicians_info
+from app.classes.dbconfig import user_data, technicians_info, application_activity
 from utils.map_utils import get_address, get_random_location, get_cluster_id
 from utils.database_utils import generate_unique_id, parse_excel_or_csv
 from app.classes.technicians_info import TechniciansInfo
-from pydantic import BaseModel, field_validator
-import random
+from app.classes.models import ActivityTags
+from pydantic import BaseModel, field_validator, EmailStr
+from datetime import datetime
+
+import pytz
 
 class TechnicianProfile(BaseModel):
     name: str
     skill_set: str
     experience_years: int
     phoneno: str
+    email: str
+    location: list[float] = get_random_location()
+
+    @field_validator('skill_set')
+    def validate_title(cls, v):
+        allowed_titles = ["router setup", "cable repair", "software troubleshooting", "fiber optics", "customer service"]
+        if v not in allowed_titles:
+            raise ValueError(f"Title must be one of: {', '.join(allowed_titles)}")
+        return v
 
 class TechnicianManagement(TechniciansInfo):
     def __init__(self) -> None:
-        pass
+        self.IST = pytz.timezone('Asia/Kolkata')
 
     def format_phone_number(self, phoneno: str) -> str:
         if not phoneno.startswith("+91-"):
@@ -31,7 +43,7 @@ class TechnicianManagement(TechniciansInfo):
             return {"message" : f"profile for {username} already exists, please update it."}
         formatted_phoneno = self.format_phone_number(profile.phoneno)
 
-        location = get_random_location() #needs to get it from the user
+        location = profile.location #needs to get it from the user
 
         while True:
             uid = generate_unique_id()
@@ -52,14 +64,15 @@ class TechnicianManagement(TechniciansInfo):
             "day_schedule": "free",
             "phoneno": formatted_phoneno,
             "user" : user["_id"],
-            "cluster_id" : int(get_cluster_id(location))
+            "cluster_id" : int(get_cluster_id(location)),
+            "email" : profile.email
         }
         result = technicians_info.insert_one(profile_data)
         if result:
             return {"message" : f"Created profile for {username} with profile name as {profile.name}"}
         return {"message" : f"Cannot able to create profile for {username}"}
     
-    def upload_csv_file(self, file):
+    def upload_csv_file(self, file, username):
         df = parse_excel_or_csv(file)
         
         generated_uids = set(df['uid'])
@@ -76,6 +89,18 @@ class TechnicianManagement(TechniciansInfo):
         # Insert data into MongoDB
         result = technicians_info.insert_many(data)
         num_entries = len(result.inserted_ids)
+
+        activity_entry = f"{username} added {num_entries} records to the database"
+        tag = ActivityTags.add
+        current_time = datetime.now(self.IST)
+
+        activity_info = {
+            "activity": activity_entry,
+            "tag": tag,
+            "created_at": current_time 
+        }
+
+        application_activity.insert_one(activity_info)
 
         self.update_cluster_id_technician()    
         return {"message": f"File uploaded successfully. {num_entries} entries inserted into MongoDB"}

@@ -62,6 +62,27 @@ async def create_ticket(ticket: Ticket, current_user: User = Depends(get_current
     response = ticketManagerObj.create_ticket(ticket=ticket, auto_assign=auto_assign_active)
     return JSONResponse(content=response, status_code=200)
 
+@router.put("/auto_assign_ticket", dependencies=[Depends(authorize_user)])
+async def assign_ticket_automatically_to_technician(ticket_id: str,
+                                               current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    """
+    Automatically assigns a ticket to a technician.
+
+    This endpoint allows an admin user to automatically assign a ticket to a technician by providing the ticket ID in the request parameters. Authentication is required via OAuth2 token, and only users with the "Admin" role are allowed to access this endpoint. Upon successful authorization, the endpoint assigns the specified ticket to a technician automatically based on predefined criteria and returns a JSON response with a status code of 200.
+
+    **Parameters:**
+    - `ticket_id` (str): The ID of the ticket to be automatically assigned.
+
+    **Returns:**
+    - `dict`: A dictionary containing information about the automatic assignment process.
+
+    """
+    if current_user.get('role') != "Admin":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    username = current_user.get('sub')
+    response = ticketManagerObj.assign_ticket_automatically(ticket_id=ticket_id, username=username)
+    return JSONResponse(content=response, status_code=200)
+
 @router.put("/assign_ticket", dependencies=[Depends(authorize_user)])
 async def assign_ticket_manually_to_technician(ticket_id: str, technician_id: str,
                                                current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
@@ -79,7 +100,8 @@ async def assign_ticket_manually_to_technician(ticket_id: str, technician_id: st
     """
     if current_user.get('role') != "Admin":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    response = ticketManagerObj.assign_ticket_manually(ticket_id=ticket_id, technician_id=technician_id)
+    username = current_user.get('sub')
+    response = ticketManagerObj.assign_ticket_manually(ticket_id=ticket_id, technician_id=technician_id, username=username)
     return JSONResponse(content=response, status_code=200)
 
 @router.get("/all_tickets", dependencies=[Depends(authorize_user)])

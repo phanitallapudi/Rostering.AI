@@ -2,6 +2,7 @@ from bson import ObjectId
 from app.classes.dbconfig import technicians_info
 from utils.map_utils import get_address, get_cluster_id
 from math import radians, sin, cos, sqrt, atan2
+from heapq import nlargest
 
 class TechniciansInfo:
     def __init__(self) -> None:
@@ -35,6 +36,17 @@ class TechniciansInfo:
             if user_id:
                 technician['user'] = str(user_id)
         return technicians
+    
+    def get_top5_technicians(self):
+        skill_sets = technicians_info.distinct("skill_set")
+        top_technicians = {}
+
+        for skill in skill_sets:
+            technicians = technicians_info.find({"skill_set": skill})
+            top_5 = nlargest(5, technicians, key=lambda x: (x['rating'], 1 if x['feedback_sentiment'] == 'positive' else 0))
+            top_technicians[skill] = [technician['name'] for technician in top_5]
+
+        return top_technicians
     
     def calculate_distance(self, lat1, lon1, lat2, lon2):
         """
@@ -128,7 +140,8 @@ class TechniciansInfo:
     def update_cluster_id_technician(self):
         cluster_column = "cluster_id"
         updated_count = 0
-        for entry in technicians_info.find({cluster_column: {"$exists": False}}):  # Only get entries without the new column
+        #for entry in technicians_info.find({cluster_column: {"$exists": False}}):
+        for entry in technicians_info.find():  # Only get entries without the new column
             location = entry["current_location"]
             retrieved_cluster_id = get_cluster_id(location)
             response = technicians_info.update_one({"_id": entry["_id"]}, {"$set": {cluster_column: int(retrieved_cluster_id)}})

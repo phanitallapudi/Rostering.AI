@@ -1,8 +1,11 @@
-from app.classes.dbconfig import user_data, tickets_data, technicians_info
+from app.classes.dbconfig import user_data, tickets_data, technicians_info, application_activity
 from utils.map_utils import get_random_location, get_cluster_id
 from utils.database_utils import generate_unique_id
+from utils.communication_utils import send_mail, generate_confirmation_email, generate_cancellation_email
 from app.classes.technicians_info import TechniciansInfo
+from app.classes.models import ActivityTags
 from pydantic import BaseModel, field_validator
+from pymongo import DESCENDING
 from datetime import datetime, timedelta
 from bson import ObjectId
 
@@ -58,6 +61,11 @@ class TicketManagement(TechniciansInfo):
             technician_id = ObjectId(top_technician["_id"])
             ticket_information["assigned_to"] = technician_id
             ticket_information["status"] = "assigned"
+            technician = technicians_info.find_one({"_id" : technician_id})
+            
+            email_to, email_subject, email_body = generate_confirmation_email(ticket_information, technician)
+            send_mail(to=email_to, subject=email_subject, body=email_body)
+
             technicians_info.update_one({"_id": technician_id}, {"$set": {"day_schedule": "booked"}})
 
         result = tickets_data.insert_one(ticket_information)
@@ -66,7 +74,7 @@ class TicketManagement(TechniciansInfo):
         return {"message": f"Cannot able to create ticket"}
 
     def get_all_tickets(self):
-        tickets = list(tickets_data.find({}))
+        tickets = list(tickets_data.find().sort("created_at", DESCENDING))
         for ticket in tickets:
             ticket['_id'] = str(ticket['_id'])
             user_id = ticket.get('assigned_to')
@@ -85,10 +93,61 @@ class TicketManagement(TechniciansInfo):
         if user_id:
             technician = technicians_info.find_one({"_id": user_id})
             technician["_id"] = str(technician["_id"])
+            if "user" in technician:
+                technician["user"] = str(technician["user"])
             ticket['assigned_to'] = technician
         return ticket
+    
+    def assign_ticket_automatically(self, ticket_id, username):
+        ticket_information = tickets_data.find_one({"_id" : ObjectId(ticket_id)})
 
-    def assign_ticket_manually(self, ticket_id, technician_id):
+        if ticket_information is None:
+            return {"message": "Invalid ticket id"}
+
+        ticket_information["_id"] = str(ticket_information["_id"])
+        location = ticket_information["location"]
+        assigned_to = ticket_information.get('assigned_to')
+
+        if assigned_to:
+            previous_assigned_technician = technicians_info.find_one({"_id": ObjectId(assigned_to)})
+            p_email_to, p_email_subject, p_email_body = generate_cancellation_email(ticket_information, previous_assigned_technician)
+            send_mail(to=p_email_to, subject=p_email_subject, body=p_email_body)
+            technicians_info.update_one({"_id": ObjectId(assigned_to)}, {"$set": {"day_schedule": "free"}})
+
+        matches_technician = self.get_nearest_technician(user_lat=location[0], user_lon=location[1], skill_set=ticket_information["title"])
+        print(matches_technician)
+
+        if len(matches_technician) == 0:
+            return {"message": "No technician is available"}
+        
+
+        top_technician = matches_technician[0]
+        if top_technician["day_schedule"] == "booked":
+            return {"message": "No technician is available"}
+        technician_id = ObjectId(top_technician["_id"])
+        technician = technicians_info.find_one({"_id" : technician_id})
+            
+        email_to, email_subject, email_body = generate_confirmation_email(ticket_information, technician)
+        send_mail(to=email_to, subject=email_subject, body=email_body)
+
+        activity_entry = f"{username} updated ticket: {ticket_information['uid']}, and assigned technician: {top_technician['uid']}"
+        tag = ActivityTags.modified
+        current_time = datetime.now(self.IST)
+
+        activity_info = {
+            "activity": activity_entry,
+            "tag": tag,
+            "created_at": current_time 
+        }
+
+        application_activity.insert_one(activity_info)
+        technicians_info.update_one({"_id": technician_id}, {"$set": {"day_schedule": "booked"}})
+        result = tickets_data.update_one({"_id" : ObjectId(ticket_id)}, {"$set": {"assigned_to": ObjectId(technician_id), "status": "assigned"}})
+        if result:
+            return {"message": f"Assigned ticket with id: {ticket_information['uid']} to technician {technician['uid']}"}
+        return {"message": f"Cannot able to assign the ticket"}
+
+    def assign_ticket_manually(self, ticket_id, technician_id, username):
         ticket = tickets_data.find_one({"_id" : ObjectId(ticket_id)})
         ticket["_id"] = str(ticket["_id"])
         assigned_to = ticket.get('assigned_to')
@@ -103,9 +162,25 @@ class TicketManagement(TechniciansInfo):
             return {"message": f"Technician with {technician_id} is not available"}
 
         if assigned_to:
-            assigned_technician = technicians_info.find_one({"_id": ObjectId(assigned_to)})
+            previous_assigned_technician = technicians_info.find_one({"_id": ObjectId(assigned_to)})
+            p_email_to, p_email_subject, p_email_body = generate_cancellation_email(ticket, previous_assigned_technician)
+            send_mail(to=p_email_to, subject=p_email_subject, body=p_email_body)
             technicians_info.update_one({"_id": ObjectId(assigned_to)}, {"$set": {"day_schedule": "free"}})
 
+        email_to, email_subject, email_body = generate_confirmation_email(ticket, assigned_technician)
+        send_mail(to=email_to, subject=email_subject, body=email_body)
+
+        activity_entry = f"{username} updated ticket: {ticket['uid']}, and assigned technician: {assigned_technician['uid']}"
+        tag = ActivityTags.modified
+        current_time = datetime.now(self.IST)
+
+        activity_info = {
+            "activity": activity_entry,
+            "tag": tag,
+            "created_at": current_time 
+        }
+
+        application_activity.insert_one(activity_info)
         tickets_data.update_one({"_id" : ObjectId(ticket_id)}, {"$set": {"assigned_to": ObjectId(technician_id), "status": "assigned"}})
         technicians_info.update_one({"_id": ObjectId(technician_id)}, {"$set": {"day_schedule": "booked"}})
 
