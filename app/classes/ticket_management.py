@@ -5,6 +5,7 @@ from utils.communication_utils import send_mail, generate_confirmation_email, ge
 from app.classes.technicians_info import TechniciansInfo
 from app.classes.models import ActivityTags
 from pydantic import BaseModel, field_validator
+from pymongo import DESCENDING
 from datetime import datetime, timedelta
 from bson import ObjectId
 
@@ -73,7 +74,7 @@ class TicketManagement(TechniciansInfo):
         return {"message": f"Cannot able to create ticket"}
 
     def get_all_tickets(self):
-        tickets = list(tickets_data.find({}))
+        tickets = list(tickets_data.find().sort("created_at", DESCENDING))
         for ticket in tickets:
             ticket['_id'] = str(ticket['_id'])
             user_id = ticket.get('assigned_to')
