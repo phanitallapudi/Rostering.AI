@@ -62,6 +62,15 @@ async def create_ticket(ticket: Ticket, current_user: User = Depends(get_current
     response = ticketManagerObj.create_ticket(ticket=ticket, auto_assign=auto_assign_active)
     return JSONResponse(content=response, status_code=200)
 
+@router.put("/auto_assign_ticket", dependencies=[Depends(authorize_user)])
+async def assign_ticket_automatically_to_technician(ticket_id: str,
+                                               current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    if current_user.get('role') != "Admin":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    username = current_user.get('sub')
+    response = ticketManagerObj.assign_ticket_automatically(ticket_id=ticket_id, username=username)
+    return JSONResponse(content=response, status_code=200)
+
 @router.put("/assign_ticket", dependencies=[Depends(authorize_user)])
 async def assign_ticket_manually_to_technician(ticket_id: str, technician_id: str,
                                                current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):

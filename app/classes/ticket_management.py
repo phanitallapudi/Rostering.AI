@@ -96,6 +96,55 @@ class TicketManagement(TechniciansInfo):
                 technician["user"] = str(technician["user"])
             ticket['assigned_to'] = technician
         return ticket
+    
+    def assign_ticket_automatically(self, ticket_id, username):
+        ticket_information = tickets_data.find_one({"_id" : ObjectId(ticket_id)})
+
+        if ticket_information is None:
+            return {"message": "Invalid ticket id"}
+
+        ticket_information["_id"] = str(ticket_information["_id"])
+        location = ticket_information["location"]
+        assigned_to = ticket_information.get('assigned_to')
+
+        if assigned_to:
+            previous_assigned_technician = technicians_info.find_one({"_id": ObjectId(assigned_to)})
+            p_email_to, p_email_subject, p_email_body = generate_cancellation_email(ticket_information, previous_assigned_technician)
+            send_mail(to=p_email_to, subject=p_email_subject, body=p_email_body)
+            technicians_info.update_one({"_id": ObjectId(assigned_to)}, {"$set": {"day_schedule": "free"}})
+
+        matches_technician = self.get_nearest_technician(user_lat=location[0], user_lon=location[1], skill_set=ticket_information["title"])
+        print(matches_technician)
+
+        if len(matches_technician) == 0:
+            return {"message": "No technician is available"}
+        
+
+        top_technician = matches_technician[0]
+        if top_technician["day_schedule"] == "booked":
+            return {"message": "No technician is available"}
+        technician_id = ObjectId(top_technician["_id"])
+        technician = technicians_info.find_one({"_id" : technician_id})
+            
+        email_to, email_subject, email_body = generate_confirmation_email(ticket_information, technician)
+        send_mail(to=email_to, subject=email_subject, body=email_body)
+
+        activity_entry = f"{username} updated ticket: {ticket_information['uid']}, and assigned technician: {top_technician['uid']}"
+        tag = ActivityTags.modified
+        current_time = datetime.now(self.IST)
+
+        activity_info = {
+            "activity": activity_entry,
+            "tag": tag,
+            "created_at": current_time 
+        }
+
+        application_activity.insert_one(activity_info)
+        technicians_info.update_one({"_id": technician_id}, {"$set": {"day_schedule": "booked"}})
+        result = tickets_data.update_one({"_id" : ObjectId(ticket_id)}, {"$set": {"assigned_to": ObjectId(technician_id), "status": "assigned"}})
+        if result:
+            return {"message": f"Assigned ticket with id: {ticket_information['uid']} to technician {technician['uid']}"}
+        return {"message": f"Cannot able to assign the ticket"}
 
     def assign_ticket_manually(self, ticket_id, technician_id, username):
         ticket = tickets_data.find_one({"_id" : ObjectId(ticket_id)})
