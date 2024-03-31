@@ -183,5 +183,6 @@ async def upload_technician_files_using_csv_xlsx(file: UploadFile = File(...), c
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     if not file.filename.endswith(('.xlsx', '.csv')):
         raise HTTPException(status_code=400, detail="Invalid file format, please upload a csv or xlsx file to process")
-    response = technicianManagementObj.upload_csv_file(file)
+    username = current_user.get('sub')
+    response = technicianManagementObj.upload_csv_file(file, username)
     return JSONResponse(content=response, status_code=200)

@@ -1,8 +1,9 @@
-from app.classes.dbconfig import user_data, tickets_data, technicians_info
+from app.classes.dbconfig import user_data, tickets_data, technicians_info, application_activity
 from utils.map_utils import get_random_location, get_cluster_id
 from utils.database_utils import generate_unique_id
 from utils.communication_utils import send_mail, generate_confirmation_email, generate_cancellation_email
 from app.classes.technicians_info import TechniciansInfo
+from app.classes.models import ActivityTags
 from pydantic import BaseModel, field_validator
 from datetime import datetime, timedelta
 from bson import ObjectId
@@ -96,7 +97,7 @@ class TicketManagement(TechniciansInfo):
             ticket['assigned_to'] = technician
         return ticket
 
-    def assign_ticket_manually(self, ticket_id, technician_id):
+    def assign_ticket_manually(self, ticket_id, technician_id, username):
         ticket = tickets_data.find_one({"_id" : ObjectId(ticket_id)})
         ticket["_id"] = str(ticket["_id"])
         assigned_to = ticket.get('assigned_to')
@@ -119,6 +120,17 @@ class TicketManagement(TechniciansInfo):
         email_to, email_subject, email_body = generate_confirmation_email(ticket, assigned_technician)
         send_mail(to=email_to, subject=email_subject, body=email_body)
 
+        activity_entry = f"{username} updated ticket: {ticket['uid']}, and assigned technician: {assigned_technician['uid']}"
+        tag = ActivityTags.modified
+        current_time = datetime.now(self.IST)
+
+        activity_info = {
+            "activity": activity_entry,
+            "tag": tag,
+            "created_at": current_time 
+        }
+
+        application_activity.insert_one(activity_info)
         tickets_data.update_one({"_id" : ObjectId(ticket_id)}, {"$set": {"assigned_to": ObjectId(technician_id), "status": "assigned"}})
         technicians_info.update_one({"_id": ObjectId(technician_id)}, {"$set": {"day_schedule": "booked"}})
 

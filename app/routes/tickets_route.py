@@ -79,7 +79,8 @@ async def assign_ticket_manually_to_technician(ticket_id: str, technician_id: st
     """
     if current_user.get('role') != "Admin":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    response = ticketManagerObj.assign_ticket_manually(ticket_id=ticket_id, technician_id=technician_id)
+    username = current_user.get('sub')
+    response = ticketManagerObj.assign_ticket_manually(ticket_id=ticket_id, technician_id=technician_id, username=username)
     return JSONResponse(content=response, status_code=200)
 
 @router.get("/all_tickets", dependencies=[Depends(authorize_user)])
