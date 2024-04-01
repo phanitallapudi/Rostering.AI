@@ -5,7 +5,8 @@ from app.classes.technicians_info import TechniciansInfo
 from app.classes.technician_management import TechnicianManagement, TechnicianProfile
 from app.routes.login_route import login
 from utils.database_utils import technicial_skill_set
-from utils.map_utils import calculate_route
+from utils.map_utils import calculate_route, get_weather_data
+import json
 
 router = APIRouter()
 technicianinfoObj = TechniciansInfo()
@@ -163,8 +164,18 @@ async def get_calculate_route(origin: str = Query(..., title="origin location", 
      """
      if current_user.get('role') not in ["Admin", "Technician"]:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-     response = calculate_route(origin, destination)
-     return JSONResponse(content=response, status_code=200)
+     response_route = calculate_route(origin, destination)
+     response_weather = get_weather_data(destination)
+     if "error" in response_route:
+        return JSONResponse(content={"error": "Failed to calculate route.", "status_code": response_route["status_code"]}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+     elif response_weather is None:
+        return JSONResponse(content={"error": "Failed to fetch weather data."}, status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+     else:
+        response = {
+            "route": response_route,
+            "weather": json.loads(response_weather)
+        }
+        return JSONResponse(content=response, status_code=status.HTTP_200_OK)
 
 @router.post("/upload_technician_files", dependencies=[Depends(authorize_user)])
 async def upload_technician_files_using_csv_xlsx(file: UploadFile = File(...), current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
