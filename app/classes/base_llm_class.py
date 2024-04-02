@@ -14,9 +14,9 @@ class BaseLLMRequirements:
     
     def get_llm(self):
         return AzureChatOpenAI(
-            openai_api_version="2023-07-01-preview",
-            azure_deployment="genai",
-            max_tokens=20000,
+            openai_api_version="2023-12-01-preview",
+            azure_deployment="ailm",
+            max_tokens=16000,
             temperature = 0.5
         )
     
