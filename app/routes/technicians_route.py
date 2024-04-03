@@ -3,6 +3,7 @@ from app.classes.login import get_current_user, authorize_user, authorize_both_u
 from fastapi.responses import JSONResponse
 from app.classes.technicians_info import TechniciansInfo
 from app.classes.technician_management import TechnicianManagement, TechnicianProfile
+from app.classes.models import PrebookTechnician
 from app.routes.login_route import login
 from utils.database_utils import technicial_skill_set
 from utils.map_utils import calculate_route
@@ -143,6 +144,27 @@ async def create_profile_for_technician(profile: TechnicianProfile, current_user
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     username = current_user.get('sub')
     response = technicianManagementObj.create_profile(username=username, profile=profile)
+    return JSONResponse(content=response, status_code=200)
+
+@router.patch("/prebook_technician", dependencies=[Depends(authorize_user)])
+async def prebook_technician_to_assign_standby(prebookTechnician: PrebookTechnician, current_user: User = Depends(get_current_user), token: str = Depends(oauth2_scheme)):
+    """
+    Prebooks a technician for standby assignment.
+
+    This endpoint allows an admin user to prebook a technician for standby assignment by providing the necessary details in the request body. Authentication is required via OAuth2 token, and only users with the "Admin" role are allowed to access this endpoint. Upon successful authorization, the endpoint prebooks the specified technician for standby assignment within the provided time frame and returns a JSON response with a status code of 200.
+
+    **Request Body (JSON):**
+    - `technician_id` (str): The ID of the technician to be prebooked.
+    - `start_time` (datetime): The start date and time for the standby assignment.
+    - `end_time` (datetime): The end date and time for the standby assignment.
+
+    **Returns:**
+    - `dict`: A dictionary containing information about the prebooking process.
+    """
+    if current_user.get('role') != "Admin":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+    username = current_user.get('sub')
+    response = technicianinfoObj.prebook_technician(technician_id=prebookTechnician.technician_id, start_date=prebookTechnician.start_time, end_date=prebookTechnician.end_time, username=username)
     return JSONResponse(content=response, status_code=200)
 
 @router.get("/calculate_route", dependencies=[Depends(authorize_both_user)])
