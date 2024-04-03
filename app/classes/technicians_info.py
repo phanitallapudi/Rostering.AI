@@ -1,18 +1,30 @@
 from bson import ObjectId
-from app.classes.dbconfig import technicians_info
+from app.classes.dbconfig import technicians_info, application_activity
+from app.classes.models import ActivityTags
 from utils.map_utils import get_address, get_cluster_id
 from math import radians, sin, cos, sqrt, atan2
 from heapq import nlargest
+from datetime import datetime, timedelta
+
+import pytz
 
 class TechniciansInfo:
     def __init__(self) -> None:
-        pass
+        self.IST = pytz.timezone('Asia/Kolkata')
 
     def get_all_technicians(self):
         technicians = list(technicians_info.find({}))
         for technician in technicians:
             technician['_id'] = str(technician['_id'])
             user_id = technician.get('user')
+            start_date = technician.get("start_date")
+            end_date = technician.get("end_date")
+
+            # Format dates if they exist
+            if start_date != None:
+                technician['start_date'] = start_date.strftime("%Y-%m-%d %H:%M:%S")
+            if end_date != None:
+                technician['end_date'] = end_date.strftime("%Y-%m-%d %H:%M:%S")
             if user_id:
                 technician['user'] = str(user_id)
         return technicians
@@ -96,6 +108,8 @@ class TechniciansInfo:
                 experience_weight = -1
                 
             if technician["day_schedule"] == "free":
+                schedule = 2
+            elif technician['day_schedule'] == "standby":
                 schedule = 1
             else:
                 schedule = 0
@@ -114,7 +128,18 @@ class TechniciansInfo:
         top_persons = []
         for i in range(min(num_persons, len(sorted_distances))):
             person, distance, weightage_score , schedule = sorted_distances[i]
+            
+            start_date = person.get("start_date")
+            end_date = person.get("end_date")
+            
+            # Format dates if they exist
+            if start_date != None:
+                person['start_date'] = start_date.strftime("%Y-%m-%d %H:%M:%S")
+            if end_date != None:
+                person['end_date'] = end_date.strftime("%Y-%m-%d %H:%M:%S")
+
             top_persons.append(person)
+            
 
         # for person in top_persons:
         #     lat, long = person["current_location"]
@@ -163,3 +188,38 @@ class TechniciansInfo:
             if response.modified_count > 0:
                 updated_count += 1
         return {"response": f"{updated_count} documents updated."}
+    
+        
+    def prebook_technician(self, technician_id, start_date, end_date, username):
+        technician = technicians_info.find_one({"_id" : ObjectId(technician_id)})
+
+        if technician is None:
+            return {"message": f"No technician found with this _id {technician_id}"}
+        
+        if technician["day_schedule"] == "booked":
+            return {"message": f"Technician with _id {technician['uid']} is already booked"}
+        
+        result = technicians_info.update_one(
+        {"_id": ObjectId(technician_id)},
+        {
+            "$set": {
+                "day_schedule": "standby",
+                "start_date": start_date,
+                "end_date": end_date
+            }
+        }
+    )
+        if result:
+            activity_entry = f"{username} pre-booked technician with uid {technician['uid']} from {start_date.strftime('%Y-%m-%d %H:%M:%S')} to {end_date.strftime('%Y-%m-%d %H:%M:%S')}"
+            tag = ActivityTags.modified
+            current_time = datetime.now(self.IST)
+
+            activity_info = {
+                "activity": activity_entry,
+                "tag": tag,
+                "created_at": current_time 
+            }
+
+            application_activity.insert_one(activity_info)
+            return {"message": f"Technician with uid {technician['uid']} assigned to standby successfully"}
+        return {"error": "Unable to book the technician"}
