@@ -17,6 +17,14 @@ class TechniciansInfo:
         for technician in technicians:
             technician['_id'] = str(technician['_id'])
             user_id = technician.get('user')
+            start_date = technician.get("start_date")
+            end_date = technician.get("end_date")
+
+            # Format dates if they exist
+            if start_date != None:
+                technician['start_date'] = start_date.strftime("%Y-%m-%d %H:%M:%S")
+            if end_date != None:
+                technician['end_date'] = end_date.strftime("%Y-%m-%d %H:%M:%S")
             if user_id:
                 technician['user'] = str(user_id)
         return technicians
