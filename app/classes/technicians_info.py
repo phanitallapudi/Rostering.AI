@@ -151,9 +151,17 @@ class TechniciansInfo:
     def get_single_technician(self, _id):
         _id = ObjectId(_id)
         # Perform the query
-        ticket = technicians_info.find_one({"_id": _id})
-        ticket["_id"] = str(ticket["_id"])
-        return ticket
+        person = technicians_info.find_one({"_id": _id})
+        person["_id"] = str(person["_id"])
+        start_date = person.get("start_date")
+        end_date = person.get("end_date")
+        
+        # Format dates if they exist
+        if start_date != None:
+            person['start_date'] = start_date.strftime("%Y-%m-%d %H:%M:%S")
+        if end_date != None:
+            person['end_date'] = end_date.strftime("%Y-%m-%d %H:%M:%S")
+        return person
     
     def get_nearest_technician(self, user_lat, user_lon, skill_set):
         user_location = (user_lat, user_lon)
