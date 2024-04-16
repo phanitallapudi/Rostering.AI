@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
+from app.middleware.login_attempt_middleware import LoginAttemptMiddleware
 from app.routes.technicians_route import router as technicians_route
 from app.routes.llm_query_route import router as llm_query_route
 from app.routes.login_route import router as login_route
@@ -13,6 +14,7 @@ app = FastAPI(
     swagger_ui_parameters={"syntaxHighlight": False}
     )
 
+app.add_middleware(LoginAttemptMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
