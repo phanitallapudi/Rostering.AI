@@ -46,7 +46,7 @@ class LoginAttemptMiddleware(BaseHTTPMiddleware):
             self.failed_attempts[client_ip] += 1
             # If failed attempts reach the limit (3), block the IP for 10 minutes
             if self.failed_attempts[client_ip] >= 3:
-                self.block_until[client_ip] = current_time + 10  # Block for 10 minutes
+                self.block_until[client_ip] = current_time + 3600  # Block for 10 minutes
                 # Reset the failed attempts counter
                 self.failed_attempts[client_ip] = 0
 
