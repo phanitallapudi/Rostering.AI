@@ -49,7 +49,8 @@ class LoginAttemptMiddleware(BaseHTTPMiddleware):
                 self.block_until[client_ip] = current_time + 3600  # Block for 10 minutes
                 # Reset the failed attempts counter
                 self.failed_attempts[client_ip] = 0
-                
-        self.failed_attempts[client_ip] = 0
+
+        if response.status_code == status.HTTP_200_OK:  
+            self.failed_attempts[client_ip] = 0
 
         return response
