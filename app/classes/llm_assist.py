@@ -12,7 +12,7 @@ import json
 
 class LLMAssistance(BaseLLMRequirements, TicketManagement):
     def __init__(self) -> None:
-        self.memory = ConversationBufferMemory(memory_key="history")
+        self.memory = ConversationBufferMemory(memory_key="history", buffer_size=2)
 
     def get_prompt(self):
         return PromptTemplate(

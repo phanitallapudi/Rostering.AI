@@ -12,12 +12,12 @@ class BaseLLMRequirements:
         os.environ["AZURE_OPENAI_API_KEY"] = os.getenv('AZURE_OPENAI_API_KEY')
         os.environ["AZURE_OPENAI_ENDPOINT"] = os.getenv('AZURE_OPENAI_ENDPOINT')
     
-    def get_llm(self):
+    def get_llm(self, temperature=0.5, max_tokens=4096):
         return AzureChatOpenAI(
             openai_api_version="2023-12-01-preview",
             azure_deployment="ailm",
-            max_tokens=16000,
-            temperature = 0.5
+            max_tokens=max_tokens,
+            temperature=temperature
         )
     
     def get_embeddings(self):
